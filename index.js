@@ -25,7 +25,7 @@ process.on('SIGINT', function() {
 app.set("view engine", "ejs");
 
 app.get('/', (req, res) => {
-    res.redirect('/kiosk');
+    res.render('hub');
 });
 	 	 	 	
 app.get('/user', (req, res) => {

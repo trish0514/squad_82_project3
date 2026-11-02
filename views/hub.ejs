@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BobaWorld (Huixin Zhang (Chan) Fan Club &lt;3)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=Nunito+Sans:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fafafa;--ink:#1a1a1a;--muted:#666;--accent:#2f6f4f;--accent-ink:#fff;--line:#ddd}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{font:400 20px/1.4 "Nunito Sans",system-ui,sans-serif;background:var(--bg);color:var(--ink);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100%;padding:24px}
+h1{font-family:"Bricolage Grotesque","Trebuchet MS",sans-serif;font-weight:800;font-size:1.8em;
+  text-align:center;margin:0 0 4px}
+.team-name{display:block;font-size:.55em;font-weight:400;color:var(--muted);margin-top:4px}
+.subtitle{color:var(--muted);margin:0 0 32px;text-align:center}
+nav{width:100%;max-width:900px}
+.hub-list{list-style:none;display:grid;grid-template-columns:repeat(4, minmax(160px,1fr));
+  gap:20px;padding:0;margin:0}
+@media (max-width:700px){.hub-list{grid-template-columns:1fr 1fr}}
+.hub-button{display:flex;align-items:center;justify-content:center;text-align:center;
+  min-height:96px;padding:16px;font-weight:700;font-size:1.1em;text-decoration:none;
+  color:var(--accent-ink);background:var(--accent);border:2px solid var(--accent);
+  border-radius:12px}
+.hub-button:hover{background:#245a3f}
+.hub-button:focus-visible{outline:4px solid #ffb703;outline-offset:3px}
+</style>
+</head>
+<body>
+  <header>
+    <h1>BobaWorld<span class="team-name">(Huixin Zhang (Chan) Fan Club &lt;3)</span></h1>
+    <p class="subtitle">Internal Navigation Hub</p>
+  </header>
+  <nav aria-label="Interface view navigation">
+    <ul class="hub-list">
+      <li><a class="hub-button" href="/manager" aria-label="Go to Manager Dashboard">Manager Dashboard</a></li>
+      <li><a class="hub-button" href="/cashier" aria-label="Go to Cashier Screen">Cashier Screen</a></li>
+      <li><a class="hub-button" href="/kiosk" aria-label="Go to Customer Kiosk">Customer Kiosk</a></li>
+      <li><a class="hub-button" href="/kitchen" aria-label="Go to Kitchen Display">Kitchen Display</a></li>
+    </ul>
+  </nav>
+</body>
+</html>
