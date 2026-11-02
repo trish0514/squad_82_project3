@@ -44,6 +44,10 @@ app.get('/kiosk', (req, res) => {
   res.render('kiosk');
 });
 
+app.get('/cashier', (req, res) => {
+  res.render('cashier');
+});
+
 app.listen(port, () => {
     console.log(`Example app listening at http://localhost:${port}`);
 });
