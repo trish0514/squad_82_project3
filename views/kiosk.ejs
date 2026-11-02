@@ -144,11 +144,10 @@ const $ = id => document.getElementById(id);
 const money = n => '$' + n.toFixed(2);
 let cat = 'milk', cart = [], lastFocus = null;
 
-function cup(){
-  return `<svg viewBox="0 0 96 120" aria-hidden="true" fill="none" stroke="#1a1a1a" stroke-width="3" stroke-linejoin="round">
-    <path d="M50 4l4 26"/><rect x="10" y="30" width="76" height="10" rx="4"/>
-    <path d="M16 40l6 68a8 8 0 0 0 8 7h36a8 8 0 0 0 8-7l6-68"/>
-    <path d="M19 70h58" stroke="#bbb"/></svg>`;
+function cup(color){
+  return `<svg viewBox="0 0 96 120" aria-hidden="true" fill="${color}" fill-opacity=".4" stroke="#1a1a1a" stroke-width="4" stroke-linejoin="round">
+    <path d="M50 4l4 26" fill="none"/><rect x="10" y="30" width="76" height="10" rx="4"/>
+    <path d="M16 40l6 68a8 8 0 0 0 8 7h36a8 8 0 0 0 8-7l6-68z"/></svg>`;
 }
 
 function renderCats(){
@@ -160,7 +159,7 @@ function renderGrid(){
   $('catTitle').textContent = c.name; $('catSub').textContent = c.sub;
   $('grid').innerHTML = MENU.filter(m => m.category===cat).map(m =>
     `<button class="drink" data-id="${m.id}" aria-label="${m.name}, ${money(m.price)}. Customize and add.">
-      ${cup()}<h3>${m.name}</h3><small>${m.desc||''}</small><span class="price">${money(m.price)}</span></button>`).join('');
+      ${cup(m.color)}<h3>${m.name}</h3><small>${m.desc||''}</small><span class="price">${money(m.price)}</span></button>`).join('');
 }
 function totals(){
   const sub = cart.reduce((s,i)=>s+i.price,0), tax = sub*TAX;
