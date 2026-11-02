@@ -78,3 +78,74 @@ legend{font-weight:800;margin-bottom:6px;font-size:.9em}
 footer{grid-column:1/-1;display:flex;justify-content:space-between;padding:6px 20px;border-top:1px solid var(--line);background:var(--card);color:var(--muted);font-size:.8em}
 </style>
 </head>
+<body>
+<div class="app">
+  <header>
+    <h1>Boba Milk Tea</h1>
+    <div class="tools" role="group" aria-label="Accessibility options">
+      <button id="txt" aria-pressed="false">Larger text</button>
+      <button id="hc" aria-pressed="false">High contrast</button>
+    </div>
+  </header>
+
+  <nav aria-label="Menu categories">
+    <% cats.forEach((c, i) => { %>
+      <button data-c="<%= c.id %>" aria-current="<%= i === 0 %>"><%= c.name %></button>
+    <% }) %>
+  </nav>
+
+  <main>
+    <div class="row" role="group" aria-label="Size">
+      <% sizes.forEach((s, i) => { %><button class="chip" data-size="<%= i %>" aria-pressed="<%= i === 0 %>"><%= s.n %></button><% }) %>
+    </div>
+    <div class="row" role="group" aria-label="Quantity">
+      <% for (let n = 1; n <= 9; n++) { %><button class="chip" data-qty="<%= n %>" aria-pressed="<%= n === 1 %>"><%= n %></button><% } %>
+    </div>
+    <% cats.forEach(c => { %>
+      <section id="sec-<%= c.id %>">
+        <h2><%= c.name %></h2>
+        <% if (c.sub) { %><p class="sub"><%= c.sub %></p><% } %>
+        <div class="grid">
+          <% menu.filter(m => m.category === c.id).forEach(m => { %>
+            <button class="drink" data-id="<%= m.id %>" data-name="<%= m.name %>" data-price="<%= m.price %>"
+                    aria-label="<%= m.name %>, $<%= Number(m.price).toFixed(2) %>. Add to order.">
+              <svg viewBox="0 0 96 120" aria-hidden="true" fill="<%= m.color %>" fill-opacity=".4" stroke="#1a1a1a" stroke-width="4" stroke-linejoin="round">
+                <path d="M50 4l4 26" fill="none"/><rect x="10" y="30" width="76" height="10" rx="4"/>
+                <path d="M16 40l6 68a8 8 0 0 0 8 7h36a8 8 0 0 0 8-7l6-68z"/></svg>
+              <h3><%= m.name %></h3><small><%= m.desc || '' %></small>
+              <span class="price">$<%= Number(m.price).toFixed(2) %></span>
+            </button>
+          <% }) %>
+        </div>
+      </section>
+    <% }) %>
+  </main>
+
+  <section class="panel" id="custom" aria-label="Customize drink"></section>
+
+  <aside class="panel" aria-label="Your order">
+    <h2>Order</h2>
+    <ul id="cart" aria-live="polite"></ul>
+    <div class="totals">
+      <div><span>Subtotal</span><span id="sub">$0.00</span></div>
+      <div><span>Tax (<%= (tax * 100).toFixed(2) %>%)</span><span id="tax">$0.00</span></div>
+      <div class="t"><span>Total</span><span id="tot">$0.00</span></div>
+    </div>
+    <button class="pay" id="pay" disabled>Place order</button>
+  </aside>
+
+  <footer><span id="clock"></span><span>POS #1 · Open</span></footer>
+</div>
+
+<script>
+const SIZES = <%- JSON.stringify(sizes) %>, SUGAR = <%- JSON.stringify(sugar) %>,
+      ICE = <%- JSON.stringify(ice) %>, TOPS = <%- JSON.stringify(tops) %>, TAX = <%= tax %>;
+const $ = id => document.getElementById(id), money = n => '$' + n.toFixed(2);
+let size = 0, qty = 1, sel = -1, cart = [];
+
+const unit = i => i.base + SIZES[i.size].p + i.tops.reduce((s, t) => s + TOPS[t].p, 0);
+function pressed(sel, attr, val){ document.querySelectorAll(sel).forEach(b => b.setAttribute('aria-pressed', b.dataset[attr] == val)); }
+
+</script>
+</body>
+</html>
