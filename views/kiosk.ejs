@@ -106,8 +106,7 @@ legend{font-weight:800;margin-bottom:8px}
 
 <script>
 /* ---------- Menu data ----------
-   Replace with your database: set MENU_URL to an Express route that returns
-   [{id,name,category,price,color,desc}] and the kiosk will use it. */
+   Replace with database */
 const MENU_URL = '/api/menu';
 const ORDER_URL = '/api/orders';
 const TAX = 0.0825;
@@ -118,6 +117,8 @@ const CATS = [
   {id:'matcha',name:'Matcha',     color:'#7bb661', sub:'Stone-ground green tea with a smooth finish.'},
   {id:'slush', name:'Slushes',    color:'#8b5fd1', sub:'Blended and frosty.'}
 ];
+
+/*MENU ITEMS */
 let MENU = [
   {id:1, name:'Classic Milk Tea',   category:'milk',  price:5.25, color:'#c98a5b', desc:'Black tea and milk'},
   {id:2, name:'Taro Milk Tea',     category:'milk',  price:5.75, color:'#b79ad6', desc:'Sweet purple taro'},
@@ -132,6 +133,8 @@ let MENU = [
   {id:11,name:'Mango Slush',       category:'slush', price:6.25, color:'#f7b32b', desc:'Blended mango'},
   {id:12,name:'Lychee Slush',      category:'slush', price:6.25, color:'#f1c9d4', desc:'Blended lychee'}
 ];
+
+/* CUSTOMIZATIONS */
 const SIZES  = [{n:'Regular',p:0},{n:'Large',p:0.75}];
 const SUGAR  = ['0%','30%','50%','70%','100%'];
 const ICE    = ['No ice','Less ice','Regular ice'];
