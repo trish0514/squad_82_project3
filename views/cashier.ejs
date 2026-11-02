@@ -146,6 +146,63 @@ let size = 0, qty = 1, sel = -1, cart = [];
 const unit = i => i.base + SIZES[i.size].p + i.tops.reduce((s, t) => s + TOPS[t].p, 0);
 function pressed(sel, attr, val){ document.querySelectorAll(sel).forEach(b => b.setAttribute('aria-pressed', b.dataset[attr] == val)); }
 
+function renderCart(){
+  $('cart').innerHTML = cart.length ? cart.map((i, k) =>
+    `<li><button data-k="${k}" aria-current="${k === sel}"><strong>${i.qty} × ${i.name}</strong><span>${money(unit(i) * i.qty)}</span>
+     <span class="opts">${SIZES[i.size].n}, ${SUGAR[i.sugar]} sugar, ${ICE[i.ice]}${i.tops.length ? ', ' + i.tops.map(t => TOPS[t].n).join(', ') : ''}</span></button></li>`).join('')
+    : '<li class="empty">Order is empty. Tap a drink to begin.</li>';
+  const sub = cart.reduce((s, i) => s + unit(i) * i.qty, 0);
+  $('sub').textContent = money(sub); $('tax').textContent = money(sub * TAX); $('tot').textContent = money(sub * (1 + TAX));
+  $('pay').disabled = !cart.length;
+  document.querySelectorAll('#cart [aria-current=true]').forEach(b => b.style.cssText = '');
+}
+function renderCustom(){
+  const i = cart[sel];
+  if (!i){ $('custom').innerHTML = '<h2>Customize</h2><p class="empty">Select a drink in your order to change its sugar, ice, or toppings.</p>'; return; }
+  const chips = (arr, key, cur, lab) => arr.map((t, k) => `<button class="chip" data-${key}="${k}" aria-pressed="${cur === k}">${lab(t)}</button>`).join('');
+  $('custom').innerHTML = `<h2>${i.qty} ${i.name}</h2>
+    <div class="step"><button data-d="-1" aria-label="Fewer">−</button><output>${i.qty}</output><button data-d="1" aria-label="More">+</button></div>
+    <fieldset><legend>Size</legend><div class="row">${chips(SIZES, 'sz', i.size, t => t.n + (t.p ? ` (+${money(t.p)})` : ''))}</div></fieldset>
+    <fieldset><legend>Sugar level</legend><div class="row">${chips(SUGAR, 'su', i.sugar, t => t)}</div></fieldset>
+    <fieldset><legend>Ice</legend><div class="row">${chips(ICE, 'ic', i.ice, t => t)}</div></fieldset>
+    <fieldset><legend>Toppings</legend><div class="row">${TOPS.map((t, k) => `<button class="chip" data-tp="${k}" aria-pressed="${i.tops.includes(k)}">${t.n} (+${money(t.p)})</button>`).join('')}</div></fieldset>
+    <button class="link" data-rm="1">Remove drink</button>`;
+}
+function refresh(){ renderCart(); renderCustom(); document.querySelectorAll('#cart button[data-k]').forEach(b => b.setAttribute('aria-current', +b.dataset.k === sel)); }
+
+document.querySelector('main').onclick = e => {
+  const s = e.target.closest('[data-size]'), q = e.target.closest('[data-qty]'), d = e.target.closest('.drink');
+  if (s){ size = +s.dataset.size; pressed('[data-size]', 'size', size); }
+  else if (q){ qty = +q.dataset.qty; pressed('[data-qty]', 'qty', qty); }
+  else if (d){ cart.push({id:d.dataset.id, name:d.dataset.name, base:+d.dataset.price, qty, size, sugar:SUGAR.length - 1, ice:ICE.length - 1, tops:[]}); sel = cart.length - 1; refresh(); }
+};
+document.querySelector('nav').onclick = e => {
+  const b = e.target.closest('button'); if (!b) return;
+  document.querySelectorAll('nav button').forEach(x => x.setAttribute('aria-current', x === b));
+  $('sec-' + b.dataset.c).scrollIntoView({behavior:'smooth', block:'start'});
+};
+$('cart').onclick = e => { const b = e.target.closest('[data-k]'); if (b){ sel = +b.dataset.k; refresh(); } };
+$('custom').onclick = e => {
+  const i = cart[sel], t = e.target.closest('button'); if (!i || !t) return;
+  const D = t.dataset;
+  if (D.d) i.qty = Math.max(1, i.qty + +D.d);
+  else if (D.sz) i.size = +D.sz; else if (D.su) i.sugar = +D.su; else if (D.ic) i.ice = +D.ic;
+  else if (D.tp){ const k = +D.tp; i.tops = i.tops.includes(k) ? i.tops.filter(x => x !== k) : [...i.tops, k]; }
+  else if (D.rm){ cart.splice(sel, 1); sel = cart.length - 1; }
+  refresh();
+};
+$('pay').onclick = async () => {
+  const sub = cart.reduce((s, i) => s + unit(i) * i.qty, 0);
+  $('pay').disabled = true;
+  try { await fetch('/api/orders', {method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({source:'pos', items:cart.map(i => ({...i, price:unit(i)})), subtotal:sub, tax:sub * TAX, total:sub * (1 + TAX)})}); } catch (err) { console.warn(err); }
+  cart = []; sel = -1; refresh();
+};
+$('hc').onclick = e => { const on = document.body.classList.toggle('hc'); e.currentTarget.setAttribute('aria-pressed', on); };
+$('txt').onclick = e => { const on = e.currentTarget.getAttribute('aria-pressed') !== 'true';
+  document.documentElement.style.setProperty('--fs', on ? '19px' : '16px'); e.currentTarget.setAttribute('aria-pressed', on); };
+const tick = () => $('clock').textContent = new Date().toLocaleString('en-US', {weekday:'short', month:'short', day:'numeric', year:'numeric', hour:'numeric', minute:'2-digit'});
+tick(); setInterval(tick, 30000); refresh();
 </script>
 </body>
 </html>
