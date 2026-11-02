@@ -1,0 +1,23 @@
+<%
+  const cats = [
+    {id:'milk', name:'Milk teas', color:'#c98a5b', sub:'Creamy, classic, and made to order.'}, {id:'fruit', name:'Fruit teas', color:'#f26a3d', sub:'Bright and refreshing over ice.'},
+    {id:'matcha', name:'Matcha', color:'#7bb661', sub:'Stone-ground green tea with a smooth finish.'}, {id:'slush', name:'Slushes', color:'#8b5fd1', sub:'Blended and frosty.'}];
+  const menu = [
+    {id:1, name:'Classic Milk Tea', category:'milk', price:5.25, color:'#c98a5b', desc:'Black tea and milk'},
+    {id:2, name:'Taro Milk Tea', category:'milk', price:5.75, color:'#b79ad6', desc:'Sweet purple taro'},
+    {id:3, name:'Brown Sugar Milk', category:'milk', price:6.25, color:'#8a5a3b', desc:'Caramelized brown sugar'},
+    {id:4, name:'Jasmine Milk Tea', category:'milk', price:5.25, color:'#e3d3a8', desc:'Floral green tea'},
+    {id:5, name:'Mango Green Tea', category:'fruit', price:5.75, color:'#f7b32b', desc:'Fresh mango, jasmine tea'},
+    {id:6, name:'Passion Fruit Tea', category:'fruit', price:5.75, color:'#f2813a', desc:'Tart and tropical'},
+    {id:7, name:'Strawberry Lemon', category:'fruit', price:6.00, color:'#e8506b', desc:'Strawberry, lemon, tea'},
+    {id:8, name:'Peach Oolong', category:'fruit', price:5.75, color:'#f4a58a', desc:'Roasted oolong, peach'},
+    {id:9, name:'Ceremonial Matcha Latte', category:'matcha', price:6.50, color:'#7bb661', desc:'Matcha and milk'},
+    {id:10, name:'Strawberry Matcha', category:'matcha', price:6.75, color:'#a8c97a', desc:'Matcha over strawberry'},
+    {id:11, name:'Mango Slush', category:'slush', price:6.25, color:'#f7b32b', desc:'Blended mango'},
+    {id:12, name:'Lychee Slush', category:'slush', price:6.25, color:'#f1c9d4', desc:'Blended lychee'}];
+  const sizes = [{n:'Regular', p:0}, {n:'Large', p:0.75}];
+  const sugar = ['0%','30%','50%','70%','100%'];
+  const ice = ['No ice','Less ice','Regular ice'];
+  const tops = [{n:'Boba',p:0.75},{n:'Lychee jelly',p:0.75},{n:'Pudding',p:0.75},{n:'Aloe vera',p:0.75},{n:'Cheese foam',p:1.25}];
+  const tax = 0.0825;
+%>
