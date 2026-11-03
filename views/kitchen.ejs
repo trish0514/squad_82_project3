@@ -98,7 +98,7 @@
                 margin: 4px 0;
             } 
             .complete{
-                width: 100px;
+                width: 100%;
                 min-height: 60px;
                 margin-top: 16px;
                 background: var(--accent);
@@ -121,9 +121,23 @@
                     <h2>Active Orders</h2>
                     <span id="order_count"></span>
                 </div>
-                <p class="sub">Orders are not connected yet.</p>
+                <p class="sub" id="order_status" role="status">Connecting to orders...</p>
                 <div class="orders" id="orders"></div>
             </main>
+
+            <template id="order_template">
+                <article class="order-card">
+                    <div class="order-heading">
+                        <div>
+                            <h3 class="order-number"></h3>
+                            <p class="order-source"></p>
+                        </div>
+                        <span class="order-time"></span>
+                    </div>
+                    <ul class="order-details"></ul>
+                    <button class="complete" type="button">Complete Order</button>
+                </article>
+            </template>
 
             <footer>
                 <span>BobaWorld</span>
@@ -131,4 +145,13 @@
             </footer>
         </div>
     </body>
+    <script>
+        const orders_containers = document.getElementById('orders');
+        const orders_template = document.getElementById('order_template');
+        const order_status = document.getElementById('order_status');
+        const order_count = document.getElementById('order_count');
+        
+        let request_running = false;
+    </script>
+
 </html>
