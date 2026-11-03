@@ -10,6 +10,7 @@
         <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=Nunito+Sans:wght@400;700&display=swap" rel="stylesheet">
 
         <style>
+            /* Future dylan this is from the others code so that you can match their theme */
             :root{--bg:#fafafa;--card:#fff;--ink:#1a1a1a;--muted:#666;--accent:#2f6f4f;--accent-ink:#fff;--line:#ddd;--fs:16px}
             body.hc{--bg:#fff;--ink:#000;--muted:#000;--accent:#005a2b;--line:#000}
             *{box-sizing:border-box}
@@ -55,6 +56,57 @@
             .pay{background:var(--accent);color:var(--accent-ink);border:0;border-radius:10px;font-weight:800;min-height:60px;width:100%}
             .pay:disabled{opacity:.4;cursor:not-allowed}
             footer{grid-column:1/-1;display:flex;justify-content:space-between;padding:6px 20px;border-top:1px solid var(--line);background:var(--card);color:var(--muted);font-size:.8em}
+
+            .summary{
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+                margin-bottom: 8px;
+            }
+            .orders{
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+                gap: 16px;
+                align-items: start;
+            }
+            .order-card{
+                background: var(--card);
+                border: 1px solid var(--line);
+                border-radius: 12px;
+                padding: 16px;
+            }
+            .order-heading{
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 12px;
+                padding-bottom: 12px;
+                border-bottom: 1px solid var(--line);
+            }
+            .order-details{
+                list-style: none;
+                margin: 0;
+                padding: 0;
+            } 
+            .order-details li{
+                padding: 12px 0;
+                border-bottom: 1px solid var(--line);
+            } 
+            .order-details p{
+                color: var(--muted);
+                margin: 4px 0;
+            } 
+            .complete{
+                width: 100px;
+                min-height: 60px;
+                margin-top: 16px;
+                background: var(--accent);
+                color: var(--accent-ink);
+                border: 0;
+                border-radius: 10px;
+                font-weight: 800;
+            }
         </style>
     </head>
     <body>
