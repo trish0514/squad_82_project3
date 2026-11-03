@@ -4,7 +4,6 @@ const dotenv = require('dotenv').config();
 
 // Create express app
 const app = express();
-app.use(express.json());
 const port = 3000;
 
 // Create pool
@@ -52,6 +51,36 @@ app.get('/cashier', (req, res) => {
 app.get('/kitchen', (req, res) => {
 	res.render('kitchen');
 });
+
+
+app.use(express.urlencoded({ extended: false}));
+
+pool.query(`CREATE TABLE IF NOT EXISTS menu_items (
+    id SERIAL PRIMARY KEY, name TEXT NOT null, category TEXT NOT NULL, 
+    price NUMERIC(6,2) NOT NULL CHECK (price >=0))`).catch(console.error);
+
+app.get('/manager', async(req, res) => {
+    try{
+        const { rows } = await pool.query('SELECT * FROM menu_items ORDER BY id');
+        res.render('manager', {items: rows });
+    } catch (err) { console.error(err); res.status(500).send('Database error'); }
+});
+
+app.post('/manager/add', async(req, res) => {
+    const { name, category, price } = req.body;
+    await pool.query('INSERT INTO menu_items (name, category, price) VALUES ($1, $2, $3)',
+        [name, category, price]).catch(console.error);
+    res.redirect('/manager');
+    });
+
+app.post('/manager/update/:id', async(req,res) => {
+    const {name, category,price}=req.body;
+    await pool.query('UPDATE menu_items SET name = $1, category = $2, price = $3 WHERE id = $4',
+        [name, category, price, req.params.id]).catch(console.error);
+    res.redirect('/manager');
+});
+
+    
 
 app.listen(port, () => {
     console.log(`Example app listening at http://localhost:${port}`);
