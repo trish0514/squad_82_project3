@@ -2,7 +2,7 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale-1">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>BobaWorld - Kitchen Display</title>
 
         <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -18,7 +18,7 @@
             h1,h2,h3{font-family:"Bricolage Grotesque","Trebuchet MS",sans-serif;margin:0;line-height:1.1}
             button{font:inherit;color:inherit;cursor:pointer;min-height:48px}
             :focus-visible{outline:3px solid var(--ink);outline-offset:3px}
-            .app{display:grid;grid-template-columns:130px 1fr 300px 310px;grid-template-rows:auto 1fr auto;height:100%}
+            .app{display: grid; grid-template-columns: 1fr; grid-template-rows: auto 1fr auto; height: 100%;}
             header{grid-column:1/-1;display:flex;align-items:center;gap:16px;padding:10px 20px;background:var(--card);border-bottom:1px solid var(--line)}
             header h1{font-size:1.4em;font-weight:800;flex:1}
             .tools{display:flex;gap:8px}
@@ -58,7 +58,25 @@
         </style>
     </head>
     <body>
-        <h1>Kitchen Display</h1>
-        <p>No active orders</p>
+        <div class="app">
+            <header>
+                <h1>BobaWorld</h1>
+                <span>Kitchen Display</span>
+            </header>
+
+            <main>
+                <div class="summary">
+                    <h2>Active Orders</h2>
+                    <span id="order_count"></span>
+                </div>
+                <p class="sub">Orders are not connected yet.</p>
+                <div class="orders" id="orders"></div>
+            </main>
+
+            <footer>
+                <span>BobaWorld</span>
+                <span>Kitchen Display</span>
+            </footer>
+        </div>
     </body>
 </html>
