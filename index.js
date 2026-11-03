@@ -48,6 +48,10 @@ app.get('/cashier', (req, res) => {
   res.render('cashier');
 });
 
+app.get('/kitchen', (req, res) => {
+	res.render('kitchen');
+});
+
 app.listen(port, () => {
     console.log(`Example app listening at http://localhost:${port}`);
 });
