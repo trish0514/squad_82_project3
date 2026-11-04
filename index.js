@@ -1,43 +1,63 @@
 const express = require('express');
 const { Pool } = require('pg');
-const dotenv = require('dotenv').config();
+require('dotenv').config();
 
-// Create express app
 const app = express();
 const port = 3000;
 
-// Create pool
+// Middleware must come before routes that use req.body
+app.use(express.urlencoded({ extended: false }));
+
+app.set('view engine', 'ejs');
+
+// PostgreSQL connection pool
 const pool = new Pool({
-    user: process.env.PSQL_USER,
-    host: process.env.PSQL_HOST,
-    database: process.env.PSQL_DATABASE,
-    password: process.env.PSQL_PASSWORD,
-    port: process.env.PSQL_PORT,
-    ssl: {rejectUnauthorized: false}
+  user: process.env.PSQL_USER,
+  host: process.env.PSQL_HOST,
+  database: process.env.PSQL_DATABASE,
+  password: process.env.PSQL_PASSWORD,
+  port: process.env.PSQL_PORT,
+  ssl: {
+    rejectUnauthorized: false
+  }
 });
 
-process.on('SIGINT', function() {
-    pool.end();
-    console.log('Application successfully shutdown');
-    process.exit(0);
+// Create the menu table if it does not already exist
+pool.query(`
+  CREATE TABLE IF NOT EXISTS menu_items (
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    category TEXT NOT NULL,
+    price NUMERIC(6,2) NOT NULL CHECK (price >= 0)
+  )
+`).catch(err => {
+  console.error('Could not create menu_items table:', err);
 });
-	 	 	 	
-app.set("view engine", "ejs");
+
+// Gracefully close the PostgreSQL pool when stopping the app
+process.on('SIGINT', async () => {
+  await pool.end();
+  console.log('Application successfully shut down');
+  process.exit(0);
+});
+
+// -------------------- HOME / OTHER PAGES --------------------
 
 app.get('/', (req, res) => {
-    res.render('hub');
+  res.render('hub');
 });
-	 	 	 	
-app.get('/user', (req, res) => {
-    pool
-        .query('SELECT * FROM teammembers;')
-        .then(query_res => {
-            res.render('user', { teammembers: query_res.rows });
-        })
-        .catch(err => {
-            console.error(err);
-            res.status(500).send('Database error');
-        });
+
+app.get('/user', async (req, res) => {
+  try {
+    const queryRes = await pool.query('SELECT * FROM teammembers;');
+
+    res.render('user', {
+      teammembers: queryRes.rows
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Database error');
+  }
 });
 
 app.get('/kiosk', (req, res) => {
@@ -49,39 +69,99 @@ app.get('/cashier', (req, res) => {
 });
 
 app.get('/kitchen', (req, res) => {
-	res.render('kitchen');
+  res.render('kitchen');
 });
 
+// -------------------- MANAGER PAGE --------------------
 
-app.use(express.urlencoded({ extended: false}));
+app.get('/manager', async (req, res) => {
+  try {
+    const { rows: items } = await pool.query(
+      'SELECT * FROM menu_items ORDER BY id'
+    );
 
-pool.query(`CREATE TABLE IF NOT EXISTS menu_items (
-    id SERIAL PRIMARY KEY, name TEXT NOT null, category TEXT NOT NULL, 
-    price NUMERIC(6,2) NOT NULL CHECK (price >=0))`).catch(console.error);
+    // This creates the choices for the sales-report dropdown.
+    const menuChoices = [
+      'All',
+      ...items.map(item => item.name)
+    ];
 
-app.get('/manager', async(req, res) => {
-    try{
-        const { rows } = await pool.query('SELECT * FROM menu_items ORDER BY id');
-        res.render('manager', {items: rows });
-    } catch (err) { console.error(err); res.status(500).send('Database error'); }
-});
+    res.render('manager', {
+      // Menu
+      items,
+      message: null,
 
-app.post('/manager/add', async(req, res) => {
-    const { name, category, price } = req.body;
-    await pool.query('INSERT INTO menu_items (name, category, price) VALUES ($1, $2, $3)',
-        [name, category, price]).catch(console.error);
-    res.redirect('/manager');
+      // Inventory — empty until you build inventory table/routes
+      ingredients: [],
+
+      // Employees — empty until you build employees table/routes
+      employees: [],
+
+      // Sales report defaults
+      menuChoices,
+      salesStart: '',
+      salesEnd: '',
+      salesItem: 'All',
+      salesRows: null,
+
+      // X-report defaults
+      xDate: '',
+      xReportTotalsLabel: '',
+      xReportRows: null,
+
+      // Restock report defaults
+      restockRows: null,
+
+      // Product usage report defaults
+      usageStart: '',
+      usageEnd: '',
+      usageRows: null
     });
-
-app.post('/manager/update/:id', async(req,res) => {
-    const {name, category,price}=req.body;
-    await pool.query('UPDATE menu_items SET name = $1, category = $2, price = $3 WHERE id = $4',
-        [name, category, price, req.params.id]).catch(console.error);
-    res.redirect('/manager');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Database error');
+  }
 });
 
-    
+// Add a menu item
+app.post('/manager/add', async (req, res) => {
+  const { name, category, price } = req.body;
 
+  try {
+    await pool.query(
+      `INSERT INTO menu_items (name, category, price)
+       VALUES ($1, $2, $3)`,
+      [name, category, price]
+    );
+
+    res.redirect('/manager');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Could not add menu item');
+  }
+});
+
+// Update a menu item
+app.post('/manager/update/:id', async (req, res) => {
+  const { name, category, price } = req.body;
+  const { id } = req.params;
+
+  try {
+    await pool.query(
+      `UPDATE menu_items
+       SET name = $1, category = $2, price = $3
+       WHERE id = $4`,
+      [name, category, price, id]
+    );
+
+    res.redirect('/manager');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Could not update menu item');
+  }
+});
+
+// Start server
 app.listen(port, () => {
-    console.log(`Example app listening at http://localhost:${port}`);
+  console.log(`Example app listening at http://localhost:${port}`);
 });
