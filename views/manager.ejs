@@ -2,375 +2,897 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>BobaWorld - Manager Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>BobaWorld | Manager Dashboard</title>
+
+  <style>
+    :root {
+      --primary: #7c3f2b;
+      --primary-dark: #5d2c1c;
+      --accent: #d88b55;
+      --cream: #fff8f1;
+      --surface: #ffffff;
+      --border: #ecdcd0;
+      --text: #30211c;
+      --muted: #7a675f;
+      --danger: #a5332b;
+      --success: #2f7d4e;
+      --shadow: 0 6px 20px rgba(75, 43, 30, 0.10);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      background: var(--cream);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .topbar {
+      color: white;
+      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.18);
+    }
+
+    .topbar-content {
+      width: min(1200px, calc(100% - 32px));
+      min-height: 92px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+    }
+
+    .brand-icon {
+      width: 45px;
+      height: 45px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      font-size: 25px;
+      background: rgba(255, 255, 255, 0.16);
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 1.45rem;
+    }
+
+    .brand p {
+      margin: 4px 0 0;
+      color: #f5d8c5;
+      font-size: 0.9rem;
+    }
+
+    .topbar a {
+      padding: 10px 14px;
+      border: 1px solid rgba(255, 255, 255, 0.55);
+      border-radius: 8px;
+      color: white;
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: bold;
+      transition: background 0.2s ease;
+    }
+
+    .topbar a:hover {
+      background: rgba(255, 255, 255, 0.16);
+    }
+
+    .container {
+      width: min(1200px, calc(100% - 32px));
+      margin: 30px auto 50px;
+    }
+
+    .notice {
+      margin-bottom: 22px;
+      padding: 14px 16px;
+      border: 1px solid #e7b6aa;
+      border-radius: 10px;
+      color: #7a211c;
+      background: #fff0ed;
+    }
+
+    .dashboard-heading {
+      margin-bottom: 24px;
+    }
+
+    .dashboard-heading h2 {
+      margin: 0;
+      font-size: 1.65rem;
+    }
+
+    .dashboard-heading p {
+      margin: 7px 0 0;
+      color: var(--muted);
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 22px;
+      align-items: start;
+    }
+
+    .card {
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .card.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .card-header {
+      padding: 17px 20px;
+      border-bottom: 1px solid var(--border);
+      background: #fffdfb;
+    }
+
+    .card-header h2 {
+      margin: 0;
+      color: var(--primary-dark);
+      font-size: 1.15rem;
+    }
+
+    .card-header p {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .card-body {
+      padding: 20px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+      gap: 12px;
+      align-items: end;
+    }
+
+    .report-form {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: end;
+      gap: 12px;
+    }
+
+    label {
+      display: flex;
+      flex: 1 1 150px;
+      flex-direction: column;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: bold;
+    }
+
+    input,
+    select {
+      width: 100%;
+      min-height: 40px;
+      padding: 9px 10px;
+      border: 1px solid #d9c8bc;
+      border-radius: 8px;
+      outline: none;
+      color: var(--text);
+      background: white;
+      font: inherit;
+      font-size: 0.92rem;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(216, 139, 85, 0.18);
+    }
+
+    button {
+      min-height: 40px;
+      padding: 9px 15px;
+      border: 0;
+      border-radius: 8px;
+      cursor: pointer;
+      color: white;
+      background: var(--primary);
+      font: inherit;
+      font-size: 0.9rem;
+      font-weight: bold;
+      transition: transform 0.15s ease, background 0.15s ease;
+    }
+
+    button:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+    }
+
+    .secondary-button {
+      color: var(--primary-dark);
+      background: #f6e8dc;
+    }
+
+    .secondary-button:hover {
+      background: #ecd5c3;
+    }
+
+    .danger-button {
+      background: var(--danger);
+    }
+
+    .danger-button:hover {
+      background: #7f251f;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      margin-top: 18px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 580px;
+      background: white;
+    }
+
+    th,
+    td {
+      padding: 11px 12px;
+      border-bottom: 1px solid #f0e5dd;
+      text-align: left;
+      vertical-align: middle;
+      font-size: 0.9rem;
+    }
+
+    th {
+      color: var(--primary-dark);
+      background: #fcf3ed;
+      font-size: 0.78rem;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    tbody tr:hover {
+      background: #fffaf6;
+    }
+
+    td input {
+      min-width: 100px;
+      min-height: 36px;
+      padding: 7px 8px;
+    }
+
+    td button {
+      min-height: 36px;
+      padding: 7px 11px;
+      white-space: nowrap;
+    }
+
+    .item-form {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr 0.7fr auto;
+      gap: 10px;
+      align-items: center;
+      margin-top: 10px;
+      padding: 12px;
+      border: 1px solid #f0e4db;
+      border-radius: 10px;
+      background: #fffdfb;
+    }
+
+    .item-form:first-of-type {
+      margin-top: 0;
+    }
+
+    .inventory-form {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 10px;
+      align-items: center;
+      margin-top: 10px;
+      padding: 12px;
+      border: 1px solid #f0e4db;
+      border-radius: 10px;
+      background: #fffdfb;
+    }
+
+    .inventory-name {
+      color: var(--primary-dark);
+      font-weight: bold;
+    }
+
+    .empty-message {
+      margin: 16px 0 0;
+      padding: 15px;
+      border-radius: 8px;
+      color: var(--muted);
+      background: #fcf3ed;
+      text-align: center;
+      font-size: 0.92rem;
+    }
+
+    .report-total {
+      margin: 16px 0 0;
+      padding: 12px 14px;
+      border-left: 4px solid var(--success);
+      border-radius: 6px;
+      color: #24653e;
+      background: #eaf7ee;
+    }
+
+    .total-row {
+      font-weight: bold;
+      background: #f4e8de;
+    }
+
+    .peak-row {
+      font-weight: bold;
+      background: #e5f5e8;
+    }
+
+    .footer {
+      padding: 20px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 0.85rem;
+    }
+
+    @media (max-width: 850px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .form-row {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .form-row button {
+        grid-column: span 2;
+      }
+
+      .item-form {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .item-form button {
+        grid-column: span 2;
+      }
+    }
+
+    @media (max-width: 550px) {
+      .topbar-content {
+        padding: 16px 0;
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .container {
+        width: min(100% - 24px, 1200px);
+        margin-top: 20px;
+      }
+
+      .form-row,
+      .item-form,
+      .inventory-form {
+        grid-template-columns: 1fr;
+      }
+
+      .form-row button,
+      .item-form button {
+        grid-column: auto;
+      }
+
+      .card-body,
+      .card-header {
+        padding: 16px;
+      }
+    }
+  </style>
 </head>
 
 <body>
-  <h1>BobaWorld Manager Dashboard</h1>
+  <header class="topbar">
+    <div class="topbar-content">
+      <div class="brand">
+        <div class="brand-icon">🧋</div>
+        <div>
+          <h1>BobaWorld</h1>
+          <p>Manager Dashboard</p>
+        </div>
+      </div>
 
-  <% if (message) { %>
-    <p style="color: darkred;"><strong><%= message %></strong></p>
-  <% } %>
+      <a href="/">Back to Home</a>
+    </div>
+  </header>
 
-  <!-- ===================== MENU ===================== -->
-  <h2>Add Menu Item</h2>
-
-  <form method="post" action="/manager/add">
-    <label>
-      Name
-      <input name="name" required>
-    </label>
-
-    <label>
-      Category
-      <input name="category" required>
-    </label>
-
-    <label>
-      Price
-      <input name="price" type="number" step="0.01" min="0" required>
-    </label>
-
-    <button type="submit">Add</button>
-  </form>
-
-  <h2>Menu</h2>
-
-  <% items.forEach(i => { %>
-    <form method="post" action="/manager/update/<%= i.id %>">
-      <input
-        name="name"
-        value="<%= i.name %>"
-        required
-        aria-label="Name">
-
-      <input
-        name="category"
-        value="<%= i.category %>"
-        required
-        aria-label="Category">
-
-      <input
-        name="price"
-        type="number"
-        step="0.01"
-        min="0"
-        value="<%= i.price %>"
-        required
-        aria-label="Price">
-
-      <button type="submit">Save</button>
-    </form>
-  <% }) %>
-
-  <!-- ===================== INVENTORY ===================== -->
-  <h2>Add Inventory Item</h2>
-
-  <form method="post" action="/manager/inventory/add">
-    <label>
-      Name
-      <input name="name" required>
-    </label>
-
-    <label>
-      Quantity
-      <input name="quantity" type="number" step="0.01" min="0" required>
-    </label>
-
-    <button type="submit">Add</button>
-  </form>
-
-  <h2>Inventory</h2>
-
-  <% ingredients.forEach(ing => { %>
-    <form method="post" action="/manager/inventory/update/<%= ing.id %>">
-      <span><%= ing.name %></span>
-
-      <input
-        name="quantity"
-        type="number"
-        step="0.01"
-        min="0"
-        value="<%= ing.quantity %>"
-        required
-        aria-label="Quantity">
-
-      <button type="submit">Save</button>
-    </form>
-  <% }) %>
-
-  <!-- ===================== EMPLOYEES ===================== -->
-  <h2>Add Employee</h2>
-
-  <form method="post" action="/manager/employees/add">
-    <label>
-      First Name
-      <input name="first_name" required>
-    </label>
-
-    <label>
-      Last Name
-      <input name="last_name" required>
-    </label>
-
-    <label>
-      Role
-      <input name="role" required>
-    </label>
-
-    <button type="submit">Add</button>
-  </form>
-
-  <h2>Employees</h2>
-
-  <table border="1" cellpadding="4">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>First Name</th>
-        <th>Last Name</th>
-        <th>Role</th>
-        <th>Save</th>
-        <th>Remove</th>
-      </tr>
-    </thead>
-
-    <tbody>
-      <% employees.forEach(e => { %>
-        <tr>
-          <td><%= e.id %></td>
-
-          <!-- Form starts inside a valid table cell -->
-          <td>
-            <form
-              id="employee-form-<%= e.id %>"
-              method="post"
-              action="/manager/employees/update/<%= e.id %>">
-
-              <input
-                name="first_name"
-                value="<%= e.firstName %>"
-                required
-                aria-label="First name">
-            </form>
-          </td>
-
-          <td>
-            <input
-              form="employee-form-<%= e.id %>"
-              name="last_name"
-              value="<%= e.lastName %>"
-              required
-              aria-label="Last name">
-          </td>
-
-          <td>
-            <input
-              form="employee-form-<%= e.id %>"
-              name="role"
-              value="<%= e.role %>"
-              required
-              aria-label="Role">
-          </td>
-
-          <td>
-            <button
-              type="submit"
-              form="employee-form-<%= e.id %>">
-              Save
-            </button>
-          </td>
-
-          <td>
-            <form
-              method="post"
-              action="/manager/employees/remove/<%= e.id %>"
-              onsubmit="return confirm('Remove <%= e.firstName %> <%= e.lastName %>?');">
-
-              <button type="submit">Remove</button>
-            </form>
-          </td>
-        </tr>
-      <% }) %>
-    </tbody>
-  </table>
-
-  <!-- ===================== SALES REPORT ===================== -->
-  <h2>Sales Report</h2>
-
-  <form method="get" action="/manager/reports/sales">
-    <label>
-      Start Date
-      <input name="start" type="date" value="<%= salesStart || '' %>">
-    </label>
-
-    <label>
-      End Date
-      <input name="end" type="date" value="<%= salesEnd || '' %>">
-    </label>
-
-    <label>
-      Item
-      <select name="item">
-        <% menuChoices.forEach(choice => { %>
-          <option
-            value="<%= choice %>"
-            <%= (salesItem || "All") === choice ? "selected" : "" %>>
-            <%= choice %>
-          </option>
-        <% }) %>
-      </select>
-    </label>
-
-    <button type="submit">Generate</button>
-  </form>
-
-  <% if (salesRows) { %>
-    <table border="1" cellpadding="4">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Item</th>
-          <th>Quantity</th>
-          <th>Revenue</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        <% salesRows.forEach(row => { %>
-          <tr <%= row.total ? 'style="font-weight: bold; background: #e0e0e0;"' : '' %>>
-            <td><%= row.date %></td>
-            <td><%= row.item %></td>
-            <td><%= row.quantity %></td>
-            <td>$<%= Number(row.revenue).toFixed(2) %></td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
-  <% } %>
-
-  <!-- ===================== X-REPORT ===================== -->
-  <h2>X-Report</h2>
-
-  <form method="get" action="/manager/reports/x">
-    <label>
-      Date
-      <input name="date" type="date" value="<%= xDate || '' %>" required>
-    </label>
-
-    <button type="submit">Run X-Report</button>
-  </form>
-
-  <% if (xReportTotalsLabel) { %>
-    <p><strong><%= xReportTotalsLabel %></strong></p>
-  <% } %>
-
-  <% if (xReportRows) { %>
-    <table border="1" cellpadding="4">
-      <thead>
-        <tr>
-          <th>Hour</th>
-          <th>Orders</th>
-          <th>Sales</th>
-          <th>Returns</th>
-          <th>Voids</th>
-          <th>Discards</th>
-          <th>Cash</th>
-          <th>Card</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        <% xReportRows.forEach(row => { %>
-          <tr <%= row.peak ? 'style="font-weight: bold; background: #d8f0d8;"' : '' %>>
-            <td><%= row.hourLabel %></td>
-            <td><%= row.orders %></td>
-            <td>$<%= Number(row.sales).toFixed(2) %></td>
-            <td>n/a</td>
-            <td>n/a</td>
-            <td>n/a</td>
-            <td>n/a</td>
-            <td>n/a</td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
-  <% } %>
-
-  <!-- ===================== RESTOCK REPORT ===================== -->
-  <h2>Restock Report</h2>
-
-  <form method="get" action="/manager/reports/restock">
-    <button type="submit">Refresh</button>
-  </form>
-
-  <% if (restockRows) { %>
-    <% if (restockRows.length === 0) { %>
-      <p>Nothing needs restocking right now.</p>
-    <% } else { %>
-      <table border="1" cellpadding="4">
-        <thead>
-          <tr>
-            <th>Item</th>
-            <th>Current</th>
-            <th>Minimum</th>
-            <th>Shortfall</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          <% restockRows.forEach(row => { %>
-            <tr>
-              <td><%= row.name %></td>
-              <td><%= row.current %></td>
-              <td><%= row.minimum %></td>
-              <td><%= row.shortfall %></td>
-            </tr>
-          <% }) %>
-        </tbody>
-      </table>
+  <main class="container">
+    <% if (message) { %>
+      <div class="notice">
+        <strong><%= message %></strong>
+      </div>
     <% } %>
-  <% } %>
 
-  <!-- ===================== PRODUCT USAGE ===================== -->
-  <h2>Product Usage</h2>
+    <section class="dashboard-heading">
+      <h2>Store Management</h2>
+      <p>Manage the menu, inventory, employees, and store reports in one place.</p>
+    </section>
 
-  <form method="get" action="/manager/reports/usage">
-    <label>
-      Start Date
-      <input name="start" type="date" value="<%= usageStart || '' %>" required>
-    </label>
+    <div class="dashboard-grid">
 
-    <label>
-      End Date
-      <input name="end" type="date" value="<%= usageEnd || '' %>" required>
-    </label>
+      <!-- ===================== MENU ===================== -->
+      <section class="card full-width">
+        <div class="card-header">
+          <h2>Menu Management</h2>
+          <p>Add, update, and maintain your available boba menu items.</p>
+        </div>
 
-    <button type="submit">Generate</button>
-  </form>
+        <div class="card-body">
+          <form method="post" action="/manager/add" class="form-row">
+            <label>
+              Item Name
+              <input name="name" placeholder="Example: Taro Milk Tea" required>
+            </label>
 
-  <% if (usageRows) { %>
-    <% if (usageRows.length === 0) { %>
-      <p>No orders found for that date range.</p>
-    <% } else { %>
-      <table border="1" cellpadding="4">
-        <thead>
-          <tr>
-            <th>Menu Item</th>
-            <th>Orders</th>
-          </tr>
-        </thead>
+            <label>
+              Category
+              <input name="category" placeholder="Example: Milk Tea" required>
+            </label>
 
-        <tbody>
-          <% usageRows.forEach(row => { %>
-            <tr>
-              <td><%= row.menu_item %></td>
-              <td><%= row.amount_sold %></td>
-            </tr>
-          <% }) %>
-        </tbody>
-      </table>
-    <% } %>
-  <% } %>
+            <label>
+              Price
+              <input name="price" type="number" step="0.01" min="0" placeholder="0.00" required>
+            </label>
+
+            <button type="submit">Add Item</button>
+          </form>
+
+          <% if (items.length === 0) { %>
+            <p class="empty-message">No menu items have been added yet.</p>
+          <% } else { %>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  <% items.forEach(i => { %>
+                    <tr>
+                      <td><%= i.id %></td>
+                      <td>
+                        <form id="menu-form-<%= i.id %>" method="post" action="/manager/update/<%= i.id %>">
+                          <input name="name" value="<%= i.name %>" required aria-label="Menu item name">
+                        </form>
+                      </td>
+                      <td>
+                        <input
+                          form="menu-form-<%= i.id %>"
+                          name="category"
+                          value="<%= i.category %>"
+                          required
+                          aria-label="Menu item category">
+                      </td>
+                      <td>
+                        <input
+                          form="menu-form-<%= i.id %>"
+                          name="price"
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          value="<%= i.price %>"
+                          required
+                          aria-label="Menu item price">
+                      </td>
+                      <td>
+                        <button type="submit" form="menu-form-<%= i.id %>">Save</button>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          <% } %>
+        </div>
+      </section>
+
+      <!-- ===================== INVENTORY ===================== -->
+      <section class="card">
+        <div class="card-header">
+          <h2>Inventory</h2>
+          <p>Track ingredients and current quantities.</p>
+        </div>
+
+        <div class="card-body">
+          <form method="post" action="/manager/inventory/add" class="form-row">
+            <label>
+              Ingredient Name
+              <input name="name" placeholder="Example: Tapioca Pearls" required>
+            </label>
+
+            <label>
+              Quantity
+              <input name="quantity" type="number" step="0.01" min="0" placeholder="0" required>
+            </label>
+
+            <button type="submit">Add</button>
+          </form>
+
+          <% if (ingredients.length === 0) { %>
+            <p class="empty-message">No inventory items are available yet.</p>
+          <% } else { %>
+            <div style="margin-top: 16px;">
+              <% ingredients.forEach(ing => { %>
+                <form method="post" action="/manager/inventory/update/<%= ing.id %>" class="inventory-form">
+                  <span class="inventory-name"><%= ing.name %></span>
+
+                  <input
+                    name="quantity"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value="<%= ing.quantity %>"
+                    required
+                    aria-label="Quantity for <%= ing.name %>">
+
+                  <button type="submit">Save</button>
+                </form>
+              <% }) %>
+            </div>
+          <% } %>
+        </div>
+      </section>
+
+      <!-- ===================== EMPLOYEES ===================== -->
+      <section class="card">
+        <div class="card-header">
+          <h2>Employees</h2>
+          <p>Add employees or update employee information.</p>
+        </div>
+
+        <div class="card-body">
+          <form method="post" action="/manager/employees/add" class="form-row">
+            <label>
+              First Name
+              <input name="first_name" required>
+            </label>
+
+            <label>
+              Last Name
+              <input name="last_name" required>
+            </label>
+
+            <label>
+              Role
+              <input name="role" placeholder="Example: Cashier" required>
+            </label>
+
+            <button type="submit">Add Employee</button>
+          </form>
+
+          <% if (employees.length === 0) { %>
+            <p class="empty-message">No employee records are available yet.</p>
+          <% } else { %>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>Role</th>
+                    <th>Save</th>
+                    <th>Remove</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  <% employees.forEach(e => { %>
+                    <tr>
+                      <td><%= e.id %></td>
+
+                      <td>
+                        <form
+                          id="employee-form-<%= e.id %>"
+                          method="post"
+                          action="/manager/employees/update/<%= e.id %>">
+                          <input
+                            name="first_name"
+                            value="<%= e.firstName %>"
+                            required
+                            aria-label="First name">
+                        </form>
+                      </td>
+
+                      <td>
+                        <input
+                          form="employee-form-<%= e.id %>"
+                          name="last_name"
+                          value="<%= e.lastName %>"
+                          required
+                          aria-label="Last name">
+                      </td>
+
+                      <td>
+                        <input
+                          form="employee-form-<%= e.id %>"
+                          name="role"
+                          value="<%= e.role %>"
+                          required
+                          aria-label="Role">
+                      </td>
+
+                      <td>
+                        <button type="submit" form="employee-form-<%= e.id %>">
+                          Save
+                        </button>
+                      </td>
+
+                      <td>
+                        <form
+                          method="post"
+                          action="/manager/employees/remove/<%= e.id %>"
+                          onsubmit="return confirm('Remove <%= e.firstName %> <%= e.lastName %>?');">
+                          <button type="submit" class="danger-button">Remove</button>
+                        </form>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          <% } %>
+        </div>
+      </section>
+
+      <!-- ===================== SALES REPORT ===================== -->
+      <section class="card full-width">
+        <div class="card-header">
+          <h2>Sales Report</h2>
+          <p>View sales totals by date range and menu item.</p>
+        </div>
+
+        <div class="card-body">
+          <form method="get" action="/manager/reports/sales" class="report-form">
+            <label>
+              Start Date
+              <input name="start" type="date" value="<%= salesStart || '' %>">
+            </label>
+
+            <label>
+              End Date
+              <input name="end" type="date" value="<%= salesEnd || '' %>">
+            </label>
+
+            <label>
+              Menu Item
+              <select name="item">
+                <% menuChoices.forEach(choice => { %>
+                  <option
+                    value="<%= choice %>"
+                    <%= (salesItem || 'All') === choice ? 'selected' : '' %>>
+                    <%= choice %>
+                  </option>
+                <% }) %>
+              </select>
+            </label>
+
+            <button type="submit">Generate Report</button>
+          </form>
+
+          <% if (salesRows) { %>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Item</th>
+                    <th>Quantity</th>
+                    <th>Revenue</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  <% salesRows.forEach(row => { %>
+                    <tr class="<%= row.total ? 'total-row' : '' %>">
+                      <td><%= row.date %></td>
+                      <td><%= row.item %></td>
+                      <td><%= row.quantity %></td>
+                      <td>$<%= Number(row.revenue).toFixed(2) %></td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          <% } %>
+        </div>
+      </section>
+
+      <!-- ===================== X-REPORT ===================== -->
+      <section class="card">
+        <div class="card-header">
+          <h2>X-Report</h2>
+          <p>Review hourly order and sales activity for one day.</p>
+        </div>
+
+        <div class="card-body">
+          <form method="get" action="/manager/reports/x" class="report-form">
+            <label>
+              Report Date
+              <input name="date" type="date" value="<%= xDate || '' %>" required>
+            </label>
+
+            <button type="submit">Run X-Report</button>
+          </form>
+
+          <% if (xReportTotalsLabel) { %>
+            <p class="report-total">
+              <strong><%= xReportTotalsLabel %></strong>
+            </p>
+          <% } %>
+
+          <% if (xReportRows) { %>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Hour</th>
+                    <th>Orders</th>
+                    <th>Sales</th>
+                    <th>Returns</th>
+                    <th>Voids</th>
+                    <th>Discards</th>
+                    <th>Cash</th>
+                    <th>Card</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  <% xReportRows.forEach(row => { %>
+                    <tr class="<%= row.peak ? 'peak-row' : '' %>">
+                      <td><%= row.hourLabel %></td>
+                      <td><%= row.orders %></td>
+                      <td>$<%= Number(row.sales).toFixed(2) %></td>
+                      <td>n/a</td>
+                      <td>n/a</td>
+                      <td>n/a</td>
+                      <td>n/a</td>
+                      <td>n/a</td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          <% } %>
+        </div>
+      </section>
+
+      <!-- ===================== RESTOCK REPORT ===================== -->
+      <section class="card">
+        <div class="card-header">
+          <h2>Restock Report</h2>
+          <p>Identify ingredients that have fallen below minimum quantity.</p>
+        </div>
+
+        <div class="card-body">
+          <form method="get" action="/manager/reports/restock">
+            <button type="submit" class="secondary-button">Refresh Report</button>
+          </form>
+
+          <% if (restockRows) { %>
+            <% if (restockRows.length === 0) { %>
+              <p class="empty-message">Nothing needs restocking right now.</p>
+            <% } else { %>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Item</th>
+                      <th>Current</th>
+                      <th>Minimum</th>
+                      <th>Shortfall</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    <% restockRows.forEach(row => { %>
+                      <tr>
+                        <td><%= row.name %></td>
+                        <td><%= row.current %></td>
+                        <td><%= row.minimum %></td>
+                        <td><%= row.shortfall %></td>
+                      </tr>
+                    <% }) %>
+                  </tbody>
+                </table>
+              </div>
+            <% } %>
+          <% } %>
+        </div>
+      </section>
+
+      <!-- ===================== PRODUCT USAGE ===================== -->
+      <section class="card full-width">
+        <div class="card-header">
+          <h2>Product Usage</h2>
+          <p>See how many times each menu item was ordered during a selected date range.</p>
+        </div>
+
+        <div class="card-body">
+          <form method="get" action="/manager/reports/usage" class="report-form">
+            <label>
+              Start Date
+              <input name="start" type="date" value="<%= usageStart || '' %>" required>
+            </label>
+
+            <label>
+              End Date
+              <input name="end" type="date" value="<%= usageEnd || '' %>" required>
+            </label>
+
+            <button type="submit">Generate Report</button>
+          </form>
+
+          <% if (usageRows) { %>
+            <% if (usageRows.length === 0) { %>
+              <p class="empty-message">No orders were found for that date range.</p>
+            <% } else { %>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Menu Item</th>
+                      <th>Orders</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    <% usageRows.forEach(row => { %>
+                      <tr>
+                        <td><%= row.menu_item %></td>
+                        <td><%= row.amount_sold %></td>
+                      </tr>
+                    <% }) %>
+                  </tbody>
+                </table>
+              </div>
+            <% } %>
+          <% } %>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="footer">
+    BobaWorld Manager Dashboard
+  </footer>
 </body>
 </html>
