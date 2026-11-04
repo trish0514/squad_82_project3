@@ -1,29 +1,191 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title> BobaWorld - Manager Dashboard</title>
+<title>BobaWorld - Manager Dashboard</title>
 </head>
 <body>
 <h1>BobaWorld Manager Dashboard</h1>
 
-<h2> Add menu item</h2>
+<% if (message) { %>
+  <p style="color: darkred;"><strong><%= message %></strong></p>
+<% } %>
+
+<!-- ===================== MENU ===================== -->
+<h2>Add menu item</h2>
 <form method="post" action="/manager/add">
-    <label>Name <input name= "name" required></label>
+    <label>Name <input name="name" required></label>
     <label>Category <input name="category" required></label>
     <label>Price <input name="price" type="number" step="0.01" min="0" required></label>
     <button>Add</button>
 </form>
 
 <h2>Menu</h2>
-<% items.forEach(i => {%>
+<% items.forEach(i => { %>
     <form method="post" action="/manager/update/<%= i.id %>">
         <input name="name" value="<%= i.name %>" required aria-label="Name">
         <input name="category" value="<%= i.category %>" required aria-label="Category">
         <input name="price" type="number" step="0.01" min="0" value="<%= i.price %>" required aria-label="Price">
         <button>Save</button>
     </form>
+<% }) %>
+
+<!-- ===================== INVENTORY ===================== -->
+<h2>Add inventory item</h2>
+<form method="post" action="/manager/inventory/add">
+    <label>Name <input name="name" required></label>
+    <label>Quantity <input name="quantity" type="number" step="0.01" min="0" required></label>
+    <button>Add</button>
+</form>
+
+<h2>Inventory</h2>
+<% ingredients.forEach(ing => { %>
+    <form method="post" action="/manager/inventory/update/<%= ing.id %>">
+        <span><%= ing.name %></span>
+        <input name="quantity" type="number" step="0.01" min="0" value="<%= ing.quantity %>" required aria-label="Quantity">
+        <button>Save</button>
+    </form>
+<% }) %>
+
+<!-- ===================== EMPLOYEES ===================== -->
+<h2>Add employee</h2>
+<form method="post" action="/manager/employees/add">
+    <label>First name <input name="first_name" required></label>
+    <label>Last name <input name="last_name" required></label>
+    <label>Role <input name="role" required></label>
+    <button>Add</button>
+</form>
+
+<h2>Employees</h2>
+<table border="1" cellpadding="4">
+  <tr>
+    <th>ID</th><th>First name</th><th>Last name</th><th>Role</th><th></th><th></th>
+  </tr>
+  <% employees.forEach(e => { %>
+    <tr>
+      <form method="post" action="/manager/employees/update/<%= e.id %>">
+        <td><%= e.id %></td>
+        <td><input name="first_name" value="<%= e.firstName %>" required aria-label="First name"></td>
+        <td><input name="last_name" value="<%= e.lastName %>" required aria-label="Last name"></td>
+        <td><input name="role" value="<%= e.role %>" required aria-label="Role"></td>
+        <td><button>Save</button></td>
+      </form>
+      <td>
+        <form method="post" action="/manager/employees/remove/<%= e.id %>"
+              onsubmit="return confirm('Remove <%= e.firstName %> <%= e.lastName %>?');">
+          <button>Remove</button>
+        </form>
+      </td>
+    </tr>
+  <% }) %>
+</table>
+
+<!-- ===================== SALES REPORT ===================== -->
+<h2>Sales Report</h2>
+<form method="get" action="/manager/reports/sales">
+    <label>Start date <input name="start" type="date" value="<%= salesStart || '' %>"></label>
+    <label>End date <input name="end" type="date" value="<%= salesEnd || '' %>"></label>
+    <label>Item
+        <select name="item">
+            <% menuChoices.forEach(choice => { %>
+                <option value="<%= choice %>" <%= (salesItem || 'All') === choice ? 'selected' : '' %>>
+                    <%= choice %>
+                </option>
+            <% }) %>
+        </select>
+    </label>
+    <button>Generate</button>
+</form>
+
+<% if (salesRows) { %>
+  <table border="1" cellpadding="4">
+    <tr><th>Date</th><th>Item</th><th>Quantity</th><th>Revenue</th></tr>
+    <% salesRows.forEach(row => { %>
+      <tr <%= row.total ? 'style="font-weight:bold;background:#e0e0e0;"' : '' %>>
+        <td><%= row.date %></td>
+        <td><%= row.item %></td>
+        <td><%= row.quantity %></td>
+        <td>$<%= Number(row.revenue).toFixed(2) %></td>
+      </tr>
     <% }) %>
+  </table>
+<% } %>
+
+<!-- ===================== X-REPORT ===================== -->
+<h2>X-Report</h2>
+<form method="get" action="/manager/reports/x">
+    <label>Date <input name="date" type="date" value="<%= xDate || '' %>" required></label>
+    <button>Run X-Report</button>
+</form>
+
+<% if (xReportTotalsLabel) { %>
+  <p><strong><%= xReportTotalsLabel %></strong></p>
+<% } %>
+
+<% if (xReportRows) { %>
+  <table border="1" cellpadding="4">
+    <tr>
+      <th>Hour</th><th>Orders</th><th>Sales</th>
+      <th>Returns</th><th>Voids</th><th>Discards</th><th>Cash</th><th>Card</th>
+    </tr>
+    <% xReportRows.forEach(row => { %>
+      <tr <%= row.peak ? 'style="font-weight:bold;background:#d8f0d8;"' : '' %>>
+        <td><%= row.hourLabel %></td>
+        <td><%= row.orders %></td>
+        <td>$<%= Number(row.sales).toFixed(2) %></td>
+        <td>n/a</td><td>n/a</td><td>n/a</td><td>n/a</td><td>n/a</td>
+      </tr>
+    <% }) %>
+  </table>
+<% } %>
+
+<!-- ===================== RESTOCK REPORT ===================== -->
+<h2>Restock Report</h2>
+<form method="get" action="/manager/reports/restock">
+    <button>Refresh</button>
+</form>
+
+<% if (restockRows) { %>
+  <% if (restockRows.length === 0) { %>
+    <p>Nothing needs restocking right now.</p>
+  <% } else { %>
+    <table border="1" cellpadding="4">
+      <tr><th>Item</th><th>Current</th><th>Minimum</th><th>Shortfall</th></tr>
+      <% restockRows.forEach(row => { %>
+        <tr>
+          <td><%= row.name %></td>
+          <td><%= row.current %></td>
+          <td><%= row.minimum %></td>
+          <td><%= row.shortfall %></td>
+        </tr>
+      <% }) %>
+    </table>
+  <% } %>
+<% } %>
+
+<!-- ===================== PRODUCT USAGE ===================== -->
+<h2>Product Usage</h2>
+<form method="get" action="/manager/reports/usage">
+    <label>Start date <input name="start" type="date" value="<%= usageStart || '' %>" required></label>
+    <label>End date <input name="end" type="date" value="<%= usageEnd || '' %>" required></label>
+    <button>Generate</button>
+</form>
+
+<% if (usageRows) { %>
+  <% if (usageRows.length === 0) { %>
+    <p>No orders found for that date range.</p>
+  <% } else { %>
+    <table border="1" cellpadding="4">
+      <tr><th>Menu item</th><th>Orders</th></tr>
+      <% usageRows.forEach(row => { %>
+        <tr>
+          <td><%= row.menu_item %></td>
+          <td><%= row.amount_sold %></td>
+        </tr>
+      <% }) %>
+    </table>
+  <% } %>
+<% } %>
+
 </body>
 </html>
