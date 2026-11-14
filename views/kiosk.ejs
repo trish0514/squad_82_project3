@@ -24,6 +24,8 @@ header .tag{font-size:.8em;color:var(--muted)}
 .tools{display:flex;gap:10px}
 .tools button{background:transparent;border:1px solid var(--ink);border-radius:8px;padding:0 16px;font-weight:700;font-size:.8em}
 .tools button[aria-pressed=true]{background:var(--ink);color:#fff}
+.tools a.btn{display:flex;align-items:center;min-height:56px;padding:0 16px;border:1px solid var(--ink);border-radius:8px;font-weight:700;font-size:.8em;color:var(--ink);text-decoration:none}
+header .hello{font-size:1.1em;font-weight:700;color:var(--ink)}
 nav{padding:18px 14px;display:flex;flex-direction:column;gap:6px;border-right:1px solid var(--line);overflow:auto}
 nav button{background:transparent;border:0;border-radius:8px;text-align:left;padding:10px 14px;font-weight:700;color:var(--muted)}
 nav button[aria-current=true]{background:var(--ink);color:#fff}
@@ -76,7 +78,24 @@ legend{font-weight:800;margin-bottom:8px}
 <div class="app">
   <header>
     <h1>BobaWorld</h1>
-    <span class="tag">Tap a drink to start</span>
+
+    <% if (customer) { %>
+      <span class="tag hello">Hi, <%= customer.name %></span>
+    <% } else { %>
+      <span class="tag">Tap a drink to start</span>
+    <% } %>
+
+    <div class="tools" role="group" aria-label="Navigation">
+      <a class="btn" href="/">Back to hub</a>
+      <% if (customer) { %>
+        <form method="POST" action="/logout" style="margin:0">
+          <button type="submit">Log out</button>
+        </form>
+      <% } else { %>
+        <a class="btn" href="/login">Log in</a>
+      <% } %>
+    </div>
+
     <div class="tools" role="group" aria-label="Accessibility options">
       <button id="txt" aria-pressed="false">Larger text</button>
       <button id="hc" aria-pressed="false">High contrast</button>
