@@ -50,13 +50,13 @@ pool.query(`
 });
 
 pool.query(`
-  CREATE TABLE IF NOT EXISTS customers (
+  CREATE TABLE IF NOT EXISTS kiosk_customers (
     id SERIAL PRIMARY KEY,
     phone TEXT UNIQUE NOT NULL,
     name TEXT NOT NULL
   )
 `).catch(err => {
-  console.error('Could not create customers table:', err);
+  console.error('Could not create kiosk_customers table:', err);
 });
 
 // Gracefully close the PostgreSQL pool when stopping the app
@@ -101,13 +101,13 @@ app.post('/login', async (req, res, next) => {
         error: 'Enter a 10-digit phone number.', phone: req.body.phone || '', needName: false });
     }
 
-    let { rows } = await pool.query('SELECT id, name FROM customers WHERE phone = $1', [phone]);
+    let { rows } = await pool.query('SELECT id, name FROM kiosk_customers WHERE phone = $1', [phone]);
     let customer = rows[0];
 
     if (!customer) {
       if (!name) return res.render('login', { error: null, phone, needName: true });
       ({ rows } = await pool.query(
-        'INSERT INTO customers (phone, name) VALUES ($1, $2) RETURNING id, name', [phone, name]));
+        'INSERT INTO kiosk_customers (phone, name) VALUES ($1, $2) RETURNING id, name', [phone, name]));
       customer = rows[0];
     }
 
