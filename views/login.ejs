@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BobaWorld – Log in</title>
+<style>
+  body{font:400 20px/1.4 system-ui,sans-serif;background:#fafafa;color:#1a1a1a;display:grid;place-items:center;height:100vh;margin:0}
+  form{background:#fff;border:1px solid #ddd;border-radius:16px;padding:32px;width:min(420px,92vw);display:grid;gap:14px}
+  h1{margin:0}
+  p{margin:0}
+  label{display:grid;gap:4px;font-weight:700}
+  input{font:inherit;padding:12px;border:1px solid #1a1a1a;border-radius:8px;min-height:56px}
+  button{font:inherit;font-weight:800;min-height:56px;border:0;border-radius:10px;background:#2f6f4f;color:#fff;cursor:pointer}
+  a{text-align:center;color:#1a1a1a}
+  .err{color:#b00020}
+  :focus-visible{outline:3px solid #1a1a1a;outline-offset:3px}
+</style>
+</head>
+<body>
+<form method="POST" action="/login">
+  <h1>BobaWorld</h1>
+  <% if (error) { %><p class="err" role="alert"><%= error %></p><% } %>
+  <% if (needName) { %><p>Looks like you're new here! What should we call you?</p><% } %>
+
+  <label>Phone number
+    <input name="phone" type="tel" inputmode="tel" autocomplete="tel"
+           value="<%= phone %>" required <%= needName ? 'readonly' : 'autofocus' %>>
+  </label>
+
+  <% if (needName) { %>
+    <label>Name <input name="name" autocomplete="given-name" required autofocus></label>
+  <% } %>
+
+  <button type="submit"><%= needName ? 'Create account' : 'Log in' %></button>
+  <a href="/kiosk">Continue as guest</a>
+</form>
+</body>
+</html>

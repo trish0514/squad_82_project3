@@ -1,26 +1,41 @@
+const session = require('express-session');
+const PgStore = require('connect-pg-simple')(session);
 const express = require('express');
 const { Pool } = require('pg');
 require('dotenv').config();
 
 const app = express();
-const port = 3000;
-
+const port = process.env.PORT || 3000;
 // Middleware must come before routes that use req.body
 app.use(express.urlencoded({ extended: false }));
 
 app.set('view engine', 'ejs');
 
 // PostgreSQL connection pool
+const isLocal = ['localhost', '127.0.0.1'].includes(process.env.PSQL_HOST);
+
 const pool = new Pool({
   user: process.env.PSQL_USER,
   host: process.env.PSQL_HOST,
   database: process.env.PSQL_DATABASE,
   password: process.env.PSQL_PASSWORD,
   port: process.env.PSQL_PORT,
-  ssl: {
-    rejectUnauthorized: false
-  }
+  ssl: (isLocal || process.env.PSQL_SSL === 'false') ? false : { rejectUnauthorized: false }
 });
+
+app.set('trust proxy', 1); // Render sits behind a proxy
+app.use(session({
+  store: new PgStore({ pool, createTableIfMissing: true }),
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 1000 * 60 * 60 * 8
+  }
+}));
 
 // Create the menu table if it does not already exist
 pool.query(`
@@ -32,6 +47,16 @@ pool.query(`
   )
 `).catch(err => {
   console.error('Could not create menu_items table:', err);
+});
+
+pool.query(`
+  CREATE TABLE IF NOT EXISTS customers (
+    id SERIAL PRIMARY KEY,
+    phone TEXT UNIQUE NOT NULL,
+    name TEXT NOT NULL
+  )
+`).catch(err => {
+  console.error('Could not create customers table:', err);
 });
 
 // Gracefully close the PostgreSQL pool when stopping the app
@@ -60,8 +85,44 @@ app.get('/user', async (req, res) => {
   }
 });
 
+const normPhone = p => (p || '').replace(/\D/g, '').replace(/^1(?=\d{10}$)/, '');
+
+app.get('/login', (req, res) => {
+  res.render('login', { error: null, phone: '', needName: false });
+});
+
+app.post('/login', async (req, res, next) => {
+  try {
+    const phone = normPhone(req.body.phone);
+    const name = (req.body.name || '').trim();
+
+    if (phone.length !== 10) {
+      return res.status(400).render('login', {
+        error: 'Enter a 10-digit phone number.', phone: req.body.phone || '', needName: false });
+    }
+
+    let { rows } = await pool.query('SELECT id, name FROM customers WHERE phone = $1', [phone]);
+    let customer = rows[0];
+
+    if (!customer) {
+      if (!name) return res.render('login', { error: null, phone, needName: true });
+      ({ rows } = await pool.query(
+        'INSERT INTO customers (phone, name) VALUES ($1, $2) RETURNING id, name', [phone, name]));
+      customer = rows[0];
+    }
+
+    req.session.regenerate(err => {
+      if (err) return next(err);
+      req.session.customer = { id: customer.id, name: customer.name };
+      res.redirect('/kiosk');
+    });
+  } catch (e) { next(e); }
+});
+
+app.post('/logout', (req, res) => req.session.destroy(() => res.redirect('/login')));
+
 app.get('/kiosk', (req, res) => {
-  res.render('kiosk');
+  res.render('kiosk', { customer: req.session.customer || null });
 });
 
 app.get('/cashier', (req, res) => {
