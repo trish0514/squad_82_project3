@@ -61,7 +61,7 @@ pool.query(`
 });
 
 pool.query(`
-  CREATE TABLE IF NOT EXISTS orders (
+  CREATE TABLE IF NOT EXISTS kiosk_orders (
     id SERIAL PRIMARY KEY,
     customer_id INT REFERENCES kiosk_customers(id),  -- NULL = guest
     source TEXT DEFAULT 'kiosk',
@@ -71,9 +71,9 @@ pool.query(`
     order_time TIMESTAMP DEFAULT NOW()
   )
 `).then(() => pool.query(`
-  CREATE TABLE IF NOT EXISTS order_items (
+  CREATE TABLE IF NOT EXISTS kiosk_order_items (
     id SERIAL PRIMARY KEY,
-    order_id INT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+    order_id INT NOT NULL REFERENCES kiosk_orders(id) ON DELETE CASCADE,
     menu_item_id INT NOT NULL REFERENCES menu_items(id),
     size TEXT,
     sugar TEXT,
@@ -82,7 +82,7 @@ pool.query(`
     price NUMERIC(8,2),
     is_reward BOOLEAN DEFAULT FALSE
   )
-`)).catch(err => console.error('Could not create order tables:', err));
+`)).catch(err => console.error('Could not create kiosk order tables:', err));
 
 // Gracefully close the PostgreSQL pool when stopping the app
 process.on('SIGINT', async () => {
@@ -269,14 +269,14 @@ app.post('/api/orders', async (req, res) => {
   try {
     await client.query('BEGIN');
     const o = await client.query(
-      `INSERT INTO orders (customer_id, source, subtotal, tax, total)
+      `INSERT INTO kiosk_orders (customer_id, source, subtotal, tax, total)
        VALUES ($1,$2,$3,$4,$5) RETURNING id`,
       [customerId, source || 'kiosk', subtotal, tax, total]);
     const orderId = o.rows[0].id;
 
     for (const i of items) {
       await client.query(
-        `INSERT INTO order_items (order_id, menu_item_id, size, sugar, ice, toppings, price)
+        `INSERT INTO kiosk_order_items (order_id, menu_item_id, size, sugar, ice, toppings, price)
          VALUES ($1,$2,$3,$4,$5,$6,$7)`,
         [orderId, i.id, i.size, i.sugar, i.ice, i.toppings, i.price]);
     }
