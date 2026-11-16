@@ -23,11 +23,13 @@ body{font:400 var(--fs)/1.35 "Nunito Sans",system-ui,sans-serif;background:var(-
 h1,h2,h3{font-family:"Bricolage Grotesque","Trebuchet MS",sans-serif;margin:0;line-height:1.1}
 button{font:inherit;color:inherit;cursor:pointer;min-height:48px}
 :focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+.sr{position:absolute;left:-9999px}
 .app{display:grid;grid-template-columns:130px 1fr 300px 310px;grid-template-rows:auto 1fr auto;height:100%}
 header{grid-column:1/-1;display:flex;align-items:center;gap:16px;padding:10px 20px;background:var(--card);border-bottom:1px solid var(--line)}
 header h1{font-size:1.4em;font-weight:800;flex:1}
 .tools{display:flex;gap:8px}
 .tools button,.chip{background:transparent;border:1px solid var(--ink);border-radius:8px;padding:0 14px;font-weight:700;font-size:.85em}
+.tools a.btn{display:flex;align-items:center;min-height:48px;padding:0 14px;border:1px solid var(--ink);border-radius:8px;font-weight:700;font-size:.85em;color:var(--ink);text-decoration:none}
 [aria-pressed=true],nav [aria-current=true]{background:var(--ink)!important;color:#fff!important}
 nav{padding:12px 8px;display:flex;flex-direction:column;gap:6px;border-right:1px solid var(--line);background:var(--card)}
 nav button{background:transparent;border:0;border-radius:8px;font-weight:700;color:var(--muted);padding:8px 6px;min-height:64px}
@@ -60,14 +62,6 @@ legend{font-weight:800;margin-bottom:6px;font-size:.9em}
 .totals .t{font:800 1.3em "Bricolage Grotesque",sans-serif;margin:4px 0 10px}
 .pay{background:var(--accent);color:var(--accent-ink);border:0;border-radius:10px;font-weight:800;min-height:60px;width:100%}
 .pay:disabled{opacity:.4;cursor:not-allowed}
-dialog{border:0;border-radius:16px;padding:0;width:min(560px,94vw);background:var(--card);color:var(--ink);max-height:94vh}
-dialog::backdrop{background:rgba(0,0,0,.5)}
-.done{text-align:center;padding:36px 28px;display:grid;gap:14px}
-.done .num{font:800 4em "Bricolage Grotesque",sans-serif}
-.actions{display:flex;gap:12px;justify-content:center}
-.actions button{border:1px solid var(--ink);border-radius:10px;padding:0 24px;background:transparent;font-weight:800}
-.actions .add{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
-.sr{position:absolute;left:-9999px}
 footer{grid-column:1/-1;display:flex;justify-content:space-between;padding:6px 20px;border-top:1px solid var(--line);background:var(--card);color:var(--muted);font-size:.8em}
 </style>
 </head>
@@ -75,7 +69,8 @@ footer{grid-column:1/-1;display:flex;justify-content:space-between;padding:6px 2
 <div class="app">
   <header>
     <h1>BobaWorld</h1>
-    <div class="tools" role="group" aria-label="Accessibility options">
+    <div class="tools" role="group" aria-label="Navigation and accessibility options">
+      <a class="btn" href="/">Back to hub</a>
       <button id="txt" aria-pressed="false">Larger text</button>
       <button id="hc" aria-pressed="false">High contrast</button>
     </div>
@@ -109,7 +104,6 @@ footer{grid-column:1/-1;display:flex;justify-content:space-between;padding:6px 2
   <footer><span id="clock"></span><span>POS #1 · Open</span></footer>
 </div>
 
-<dialog id="dlg" aria-labelledby="dlgTitle"></dialog>
 <div class="sr" role="status" id="live"></div>
 
 <script>
@@ -210,24 +204,16 @@ footer{grid-column:1/-1;display:flex;justify-content:space-between;padding:6px 2
     try{
       const r = await fetch(ORDER_URL,{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({source:'pos', subtotal:sub, tax:tax, total:total,
-          items:cart.map(i => ({id:i.id, name:i.name, quantity:i.qty, size:SIZES[i.size].n, sugar:SUGAR[i.sugar], ice:ICE[i.ice],
-            toppings:i.tops.map(t => TOPS[t].n), price:unit(i)}))})});
+          items:cart.flatMap(i => Array.from({length:i.qty}, () => ({id:i.id, name:i.name, size:SIZES[i.size].n, sugar:SUGAR[i.sugar], ice:ICE[i.ice],
+            toppings:i.tops.map(t => TOPS[t].n), price:unit(i)})))})});
       if(!r.ok) throw new Error('HTTP ' + r.status);
       const d = await r.json();
-      const num = d.orderNumber;
-      $('dlg').innerHTML = `<div class="done"><h2 id="dlgTitle">Order placed</h2>
-        <div class="num" aria-label="Order number ${num}">#${num}</div>
-        <p>Total ${money(total)}</p>
-        <div class="actions"><button class="add" id="ok">New order</button></div></div>`;
-      $('dlg').showModal(); $('ok').onclick = () => $('dlg').close();
+      $('live').textContent = 'Order ' + d.orderNumber + ' placed.';
       cart = []; sel = -1; refresh();
     }catch(e){
       console.error('Order failed', e);
-      $('dlg').innerHTML = `<div class="done"><h2 id="dlgTitle">Sorry, something went wrong.</h2>
-        <p>The order was not placed. Please try again.</p>
-        <div class="actions"><button class="add" id="ok">Back to order</button></div></div>`;
-      $('dlg').showModal(); $('ok').onclick = () => $('dlg').close();
-      $('pay').disabled = !cart.length;   // cart is kept so they can retry
+      $('live').textContent = 'Order failed. Please try again.';
+      $('pay').disabled = !cart.length;
     }
   }
   $('pay').onclick = placeOrder;
@@ -239,5 +225,3 @@ footer{grid-column:1/-1;display:flex;justify-content:space-between;padding:6px 2
 </script>
 </body>
 </html>
-
-
