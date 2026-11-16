@@ -291,6 +291,39 @@ app.post('/api/orders', async (req, res) => {
   }
 });
 
+//bobabot
+app.post('/api/chat', async(req, res) => {
+  try{
+    const {rows} = await pool.query('SELECT name, price FROM menu_items');
+    const menu = rows.map (r => `${r.name} $${r.price}`).join(', ');
+    const prompt = 'You are Bobabot, a cute and friendly helper on the BobaWorld kiosk. ' +
+    'Answer in 1 to 3 short, simple sentences with no markdown. ' + 
+    `Only suggest drinks from this menu ${menu}. ` +
+    'Toppings are boba, lychee jelly, pudding, aloe vera, and cheese foam. ';
+
+    const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-4-hydrogen:generateContent', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'x-goog-api-key': process.env.BOT_API},
+      body: JSON.stringify({
+        system_instruction: { parts: [{ text: prompt}]},
+        contents: [{role: 'user', parts: [{text: String(req.body.message).slice(0,500)}] }]
+
+      })
+    });
+    const data = await r.json();
+    res.json({ reply: data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sorry, please try again!'});
+
+
+  } catch (err) {
+    console.error(err);
+    res.json({reply: 'Sorry, I cannot answer right now.'});
+  }
+
+});
+
+
+
+
 // Start server
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`);
