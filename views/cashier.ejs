@@ -1,20 +1,4 @@
 <%
-  const cats = [
-    {id:'milk', name:'Milk teas', color:'#c98a5b', sub:'Creamy, classic, and made to order.'}, {id:'fruit', name:'Fruit teas', color:'#f26a3d', sub:'Bright and refreshing over ice.'},
-    {id:'matcha', name:'Matcha', color:'#7bb661', sub:'Stone-ground green tea with a smooth finish.'}, {id:'slush', name:'Slushes', color:'#8b5fd1', sub:'Blended and frosty.'}];
-  const menu = [
-    {id:1, name:'Classic Milk Tea', category:'milk', price:5.25, color:'#c98a5b', desc:'Black tea and milk'},
-    {id:2, name:'Taro Milk Tea', category:'milk', price:5.75, color:'#b79ad6', desc:'Sweet purple taro'},
-    {id:3, name:'Brown Sugar Milk', category:'milk', price:6.25, color:'#8a5a3b', desc:'Caramelized brown sugar'},
-    {id:4, name:'Jasmine Milk Tea', category:'milk', price:5.25, color:'#e3d3a8', desc:'Floral green tea'},
-    {id:5, name:'Mango Green Tea', category:'fruit', price:5.75, color:'#f7b32b', desc:'Fresh mango, jasmine tea'},
-    {id:6, name:'Passion Fruit Tea', category:'fruit', price:5.75, color:'#f2813a', desc:'Tart and tropical'},
-    {id:7, name:'Strawberry Lemon', category:'fruit', price:6.00, color:'#e8506b', desc:'Strawberry, lemon, tea'},
-    {id:8, name:'Peach Oolong', category:'fruit', price:5.75, color:'#f4a58a', desc:'Roasted oolong, peach'},
-    {id:9, name:'Ceremonial Matcha Latte', category:'matcha', price:6.50, color:'#7bb661', desc:'Matcha and milk'},
-    {id:10, name:'Strawberry Matcha', category:'matcha', price:6.75, color:'#a8c97a', desc:'Matcha over strawberry'},
-    {id:11, name:'Mango Slush', category:'slush', price:6.25, color:'#f7b32b', desc:'Blended mango'},
-    {id:12, name:'Lychee Slush', category:'slush', price:6.25, color:'#f1c9d4', desc:'Blended lychee'}];
   const sizes = [{n:'Regular', p:0}, {n:'Large', p:0.75}];
   const sugar = ['0%','30%','50%','70%','100%'];
   const ice = ['No ice','Less ice','Regular ice'];
@@ -47,6 +31,7 @@ header h1{font-size:1.4em;font-weight:800;flex:1}
 [aria-pressed=true],nav [aria-current=true]{background:var(--ink)!important;color:#fff!important}
 nav{padding:12px 8px;display:flex;flex-direction:column;gap:6px;border-right:1px solid var(--line);background:var(--card)}
 nav button{background:transparent;border:0;border-radius:8px;font-weight:700;color:var(--muted);padding:8px 6px;min-height:64px}
+nav button,main h2{text-transform:capitalize}
 main{padding:14px 20px;overflow:auto}
 .row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
 .chip{min-width:52px;border-radius:24px}
@@ -88,11 +73,7 @@ footer{grid-column:1/-1;display:flex;justify-content:space-between;padding:6px 2
     </div>
   </header>
 
-  <nav aria-label="Menu categories">
-    <% cats.forEach((c, i) => { %>
-      <button data-c="<%= c.id %>" aria-current="<%= i === 0 %>"><%= c.name %></button>
-    <% }) %>
-  </nav>
+  <nav id="cats" aria-label="Menu categories"></nav>
 
   <main>
     <div class="row" role="group" aria-label="Size">
@@ -101,24 +82,7 @@ footer{grid-column:1/-1;display:flex;justify-content:space-between;padding:6px 2
     <div class="row" role="group" aria-label="Quantity">
       <% for (let n = 1; n <= 9; n++) { %><button class="chip" data-qty="<%= n %>" aria-pressed="<%= n === 1 %>"><%= n %></button><% } %>
     </div>
-    <% cats.forEach(c => { %>
-      <section id="sec-<%= c.id %>">
-        <h2><%= c.name %></h2>
-        <% if (c.sub) { %><p class="sub"><%= c.sub %></p><% } %>
-        <div class="grid">
-          <% menu.filter(m => m.category === c.id).forEach(m => { %>
-            <button class="drink" data-id="<%= m.id %>" data-name="<%= m.name %>" data-price="<%= m.price %>"
-                    aria-label="<%= m.name %>, $<%= Number(m.price).toFixed(2) %>. Add to order.">
-              <svg viewBox="0 0 96 120" aria-hidden="true" fill="<%= m.color %>" fill-opacity=".4" stroke="#1a1a1a" stroke-width="4" stroke-linejoin="round">
-                <path d="M50 4l4 26" fill="none"/><rect x="10" y="30" width="76" height="10" rx="4"/>
-                <path d="M16 40l6 68a8 8 0 0 0 8 7h36a8 8 0 0 0 8-7l6-68z"/></svg>
-              <h3><%= m.name %></h3><small><%= m.desc || '' %></small>
-              <span class="price">$<%= Number(m.price).toFixed(2) %></span>
-            </button>
-          <% }) %>
-        </div>
-      </section>
-    <% }) %>
+    <div id="menu"><p class="empty">Loading menu…</p></div>
   </main>
 
   <section class="panel" id="custom" aria-label="Customize drink"></section>
@@ -138,71 +102,107 @@ footer{grid-column:1/-1;display:flex;justify-content:space-between;padding:6px 2
 </div>
 
 <script>
-const SIZES = <%- JSON.stringify(sizes) %>, SUGAR = <%- JSON.stringify(sugar) %>,
-      ICE = <%- JSON.stringify(ice) %>, TOPS = <%- JSON.stringify(tops) %>, TAX = <%= tax %>;
-const $ = id => document.getElementById(id), money = n => '$' + n.toFixed(2);
-let size = 0, qty = 1, sel = -1, cart = [];
+  const SIZES = JSON.parse('<%- JSON.stringify(sizes) %>');
+  const SUGAR = JSON.parse('<%- JSON.stringify(sugar) %>');
+  const ICE = JSON.parse('<%- JSON.stringify(ice) %>');
+  const TOPS = JSON.parse('<%- JSON.stringify(tops) %>');
+  const TAX = JSON.parse('<%- JSON.stringify(tax) %>');
+  const $ = id => document.getElementById(id), money = n => '$' + n.toFixed(2);
+  let size = 0, qty = 1, sel = -1, cart = [], MENU = [], CATS = [];
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const cup = color => `<svg viewBox="0 0 96 120" aria-hidden="true" fill="${esc(color)}" fill-opacity=".4" stroke="#1a1a1a" stroke-width="4" stroke-linejoin="round">
+    <path d="M50 4l4 26" fill="none"/><rect x="10" y="30" width="76" height="10" rx="4"/>
+    <path d="M16 40l6 68a8 8 0 0 0 8 7h36a8 8 0 0 0 8-7l6-68z"/></svg>`;
 
-const unit = i => i.base + SIZES[i.size].p + i.tops.reduce((s, t) => s + TOPS[t].p, 0);
-function pressed(sel, attr, val){ document.querySelectorAll(sel).forEach(b => b.setAttribute('aria-pressed', b.dataset[attr] == val)); }
+  function renderMenu(){
+    $('cats').innerHTML = CATS.map((c, i) => `<button data-c="${i}" aria-current="${i === 0}">${esc(c)}</button>`).join('');
+    $('menu').innerHTML = CATS.map((c, i) => `<section id="sec-${i}"><h2>${esc(c)}</h2><div class="grid">` +
+      MENU.filter(m => m.category === c).map(m =>
+        `<button class="drink" data-id="${esc(m.id)}" aria-label="${esc(m.name)}, ${money(m.price)}. Add to order.">
+          ${cup(m.color)}<h3>${esc(m.name)}</h3><small>${esc(m.desc)}</small><span class="price">${money(m.price)}</span></button>`).join('') +
+      `</div></section>`).join('');
+  }
+  async function loadMenu(){
+    try {
+      const r = await fetch('/api/menu');
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const d = await r.json();
+      if (!Array.isArray(d) || !d.length) throw new Error('Empty menu');
+      MENU = d.map(x => ({...x, price:Number(x.price), color:x.color || '#c98a5b'}));
+      CATS = [...new Set(MENU.map(m => m.category))];
+      renderMenu();
+    } catch (err) {
+      console.error('Menu load failed', err);
+      $('menu').innerHTML = '<p class="empty" role="alert">Could not load the menu. Refresh to try again.</p>';
+    }
+  }
 
-function renderCart(){
-  $('cart').innerHTML = cart.length ? cart.map((i, k) =>
-    `<li><button data-k="${k}" aria-current="${k === sel}"><strong>${i.qty} × ${i.name}</strong><span>${money(unit(i) * i.qty)}</span>
-     <span class="opts">${SIZES[i.size].n}, ${SUGAR[i.sugar]} sugar, ${ICE[i.ice]}${i.tops.length ? ', ' + i.tops.map(t => TOPS[t].n).join(', ') : ''}</span></button></li>`).join('')
-    : '<li class="empty">Order is empty. Tap a drink to begin.</li>';
-  const sub = cart.reduce((s, i) => s + unit(i) * i.qty, 0);
-  $('sub').textContent = money(sub); $('tax').textContent = money(sub * TAX); $('tot').textContent = money(sub * (1 + TAX));
-  $('pay').disabled = !cart.length;
-  document.querySelectorAll('#cart [aria-current=true]').forEach(b => b.style.cssText = '');
-}
-function renderCustom(){
-  const i = cart[sel];
-  if (!i){ $('custom').innerHTML = '<h2>Customize</h2><p class="empty">Select a drink in your order to change its sugar, ice, or toppings.</p>'; return; }
-  const chips = (arr, key, cur, lab) => arr.map((t, k) => `<button class="chip" data-${key}="${k}" aria-pressed="${cur === k}">${lab(t)}</button>`).join('');
-  $('custom').innerHTML = `<h2>${i.qty} ${i.name}</h2>
-    <div class="step"><button data-d="-1" aria-label="Fewer">−</button><output>${i.qty}</output><button data-d="1" aria-label="More">+</button></div>
-    <fieldset><legend>Size</legend><div class="row">${chips(SIZES, 'sz', i.size, t => t.n + (t.p ? ` (+${money(t.p)})` : ''))}</div></fieldset>
-    <fieldset><legend>Sugar level</legend><div class="row">${chips(SUGAR, 'su', i.sugar, t => t)}</div></fieldset>
-    <fieldset><legend>Ice</legend><div class="row">${chips(ICE, 'ic', i.ice, t => t)}</div></fieldset>
-    <fieldset><legend>Toppings</legend><div class="row">${TOPS.map((t, k) => `<button class="chip" data-tp="${k}" aria-pressed="${i.tops.includes(k)}">${t.n} (+${money(t.p)})</button>`).join('')}</div></fieldset>
-    <button class="link" data-rm="1">Remove drink</button>`;
-}
-function refresh(){ renderCart(); renderCustom(); document.querySelectorAll('#cart button[data-k]').forEach(b => b.setAttribute('aria-current', +b.dataset.k === sel)); }
+  const unit = i => i.base + SIZES[i.size].p + i.tops.reduce((s, t) => s + TOPS[t].p, 0);
+  function pressed(sel, attr, val){ document.querySelectorAll(sel).forEach(b => b.setAttribute('aria-pressed', b.dataset[attr] == val)); }
 
-document.querySelector('main').onclick = e => {
-  const s = e.target.closest('[data-size]'), q = e.target.closest('[data-qty]'), d = e.target.closest('.drink');
-  if (s){ size = +s.dataset.size; pressed('[data-size]', 'size', size); }
-  else if (q){ qty = +q.dataset.qty; pressed('[data-qty]', 'qty', qty); }
-  else if (d){ cart.push({id:d.dataset.id, name:d.dataset.name, base:+d.dataset.price, qty, size, sugar:SUGAR.length - 1, ice:ICE.length - 1, tops:[]}); sel = cart.length - 1; refresh(); }
-};
-document.querySelector('nav').onclick = e => {
-  const b = e.target.closest('button'); if (!b) return;
-  document.querySelectorAll('nav button').forEach(x => x.setAttribute('aria-current', x === b));
-  $('sec-' + b.dataset.c).scrollIntoView({behavior:'smooth', block:'start'});
-};
-$('cart').onclick = e => { const b = e.target.closest('[data-k]'); if (b){ sel = +b.dataset.k; refresh(); } };
-$('custom').onclick = e => {
-  const i = cart[sel], t = e.target.closest('button'); if (!i || !t) return;
-  const D = t.dataset;
-  if (D.d) i.qty = Math.max(1, i.qty + +D.d);
-  else if (D.sz) i.size = +D.sz; else if (D.su) i.sugar = +D.su; else if (D.ic) i.ice = +D.ic;
-  else if (D.tp){ const k = +D.tp; i.tops = i.tops.includes(k) ? i.tops.filter(x => x !== k) : [...i.tops, k]; }
-  else if (D.rm){ cart.splice(sel, 1); sel = cart.length - 1; }
-  refresh();
-};
-$('pay').onclick = async () => {
-  const sub = cart.reduce((s, i) => s + unit(i) * i.qty, 0);
-  $('pay').disabled = true;
-  try { await fetch('/api/orders', {method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({source:'pos', items:cart.map(i => ({...i, price:unit(i)})), subtotal:sub, tax:sub * TAX, total:sub * (1 + TAX)})}); } catch (err) { console.warn(err); }
-  cart = []; sel = -1; refresh();
-};
-$('hc').onclick = e => { const on = document.body.classList.toggle('hc'); e.currentTarget.setAttribute('aria-pressed', on); };
-$('txt').onclick = e => { const on = e.currentTarget.getAttribute('aria-pressed') !== 'true';
-  document.documentElement.style.setProperty('--fs', on ? '19px' : '16px'); e.currentTarget.setAttribute('aria-pressed', on); };
-const tick = () => $('clock').textContent = new Date().toLocaleString('en-US', {weekday:'short', month:'short', day:'numeric', year:'numeric', hour:'numeric', minute:'2-digit'});
-tick(); setInterval(tick, 30000); refresh();
+  function renderCart(){
+    $('cart').innerHTML = cart.length ? cart.map((i, k) =>
+      `<li><button data-k="${k}" aria-current="${k === sel}"><strong>${i.qty} × ${i.name}</strong><span>${money(unit(i) * i.qty)}</span>
+      <span class="opts">${SIZES[i.size].n}, ${SUGAR[i.sugar]} sugar, ${ICE[i.ice]}${i.tops.length ? ', ' + i.tops.map(t => TOPS[t].n).join(', ') : ''}</span></button></li>`).join('')
+      : '<li class="empty">Order is empty. Tap a drink to begin.</li>';
+    const sub = cart.reduce((s, i) => s + unit(i) * i.qty, 0);
+    $('sub').textContent = money(sub); $('tax').textContent = money(sub * TAX); $('tot').textContent = money(sub * (1 + TAX));
+    $('pay').disabled = !cart.length;
+    document.querySelectorAll('#cart [aria-current=true]').forEach(b => b.style.cssText = '');
+  }
+  function renderCustom(){
+    const i = cart[sel];
+    if (!i){ $('custom').innerHTML = '<h2>Customize</h2><p class="empty">Select a drink in your order to change its sugar, ice, or toppings.</p>'; return; }
+    const chips = (arr, key, cur, lab) => arr.map((t, k) => `<button class="chip" data-${key}="${k}" aria-pressed="${cur === k}">${lab(t)}</button>`).join('');
+    $('custom').innerHTML = `<h2>${i.qty} ${i.name}</h2>
+      <div class="step"><button data-d="-1" aria-label="Fewer">−</button><output>${i.qty}</output><button data-d="1" aria-label="More">+</button></div>
+      <fieldset><legend>Size</legend><div class="row">${chips(SIZES, 'sz', i.size, t => t.n + (t.p ? ` (+${money(t.p)})` : ''))}</div></fieldset>
+      <fieldset><legend>Sugar level</legend><div class="row">${chips(SUGAR, 'su', i.sugar, t => t)}</div></fieldset>
+      <fieldset><legend>Ice</legend><div class="row">${chips(ICE, 'ic', i.ice, t => t)}</div></fieldset>
+      <fieldset><legend>Toppings</legend><div class="row">${TOPS.map((t, k) => `<button class="chip" data-tp="${k}" aria-pressed="${i.tops.includes(k)}">${t.n} (+${money(t.p)})</button>`).join('')}</div></fieldset>
+      <button class="link" data-rm="1">Remove drink</button>`;
+  }
+  function refresh(){ renderCart(); renderCustom(); document.querySelectorAll('#cart button[data-k]').forEach(b => b.setAttribute('aria-current', +b.dataset.k === sel)); }
+
+  document.querySelector('main').onclick = e => {
+    const s = e.target.closest('[data-size]'), q = e.target.closest('[data-qty]'), d = e.target.closest('.drink');
+    if (s){ size = +s.dataset.size; pressed('[data-size]', 'size', size); }
+    else if (q){ qty = +q.dataset.qty; pressed('[data-qty]', 'qty', qty); }
+    else if (d){ 
+      const m = MENU.find(x => x.id == d.dataset.id); 
+      if (!m) return;
+      cart.push({id:m.id, name:m.name, base:m.price, qty, size, sugar:SUGAR.length - 1, ice:ICE.length - 1, tops:[]}); 
+      sel = cart.length - 1; 
+      refresh();
+    }
+  };
+  document.querySelector('nav').onclick = e => {
+    const b = e.target.closest('button'); if (!b) return;
+    document.querySelectorAll('nav button').forEach(x => x.setAttribute('aria-current', x === b));
+    const sec = $('sec-' + b.dataset.c); if (sec) sec.scrollIntoView({behavior:'smooth', block:'start'});
+  };
+  $('cart').onclick = e => { const b = e.target.closest('[data-k]'); if (b){ sel = +b.dataset.k; refresh(); } };
+  $('custom').onclick = e => {
+    const i = cart[sel], t = e.target.closest('button'); if (!i || !t) return;
+    const D = t.dataset;
+    if (D.d) i.qty = Math.max(1, i.qty + +D.d);
+    else if (D.sz) i.size = +D.sz; else if (D.su) i.sugar = +D.su; else if (D.ic) i.ice = +D.ic;
+    else if (D.tp){ const k = +D.tp; i.tops = i.tops.includes(k) ? i.tops.filter(x => x !== k) : [...i.tops, k]; }
+    else if (D.rm){ cart.splice(sel, 1); sel = cart.length - 1; }
+    refresh();
+  };
+  $('pay').onclick = async () => {
+    const sub = cart.reduce((s, i) => s + unit(i) * i.qty, 0);
+    $('pay').disabled = true;
+    try { await fetch('/api/orders', {method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({source:'pos', items:cart.map(i => ({...i, price:unit(i)})), subtotal:sub, tax:sub * TAX, total:sub * (1 + TAX)})}); } catch (err) { console.warn(err); }
+    cart = []; sel = -1; refresh();
+  };
+  $('hc').onclick = e => { const on = document.body.classList.toggle('hc'); e.currentTarget.setAttribute('aria-pressed', on); };
+  $('txt').onclick = e => { const on = e.currentTarget.getAttribute('aria-pressed') !== 'true';
+    document.documentElement.style.setProperty('--fs', on ? '19px' : '16px'); e.currentTarget.setAttribute('aria-pressed', on); };
+  const tick = () => $('clock').textContent = new Date().toLocaleString('en-US', {weekday:'short', month:'short', day:'numeric', year:'numeric', hour:'numeric', minute:'2-digit'});
+  tick(); setInterval(tick, 30000); refresh(); loadMenu();
 </script>
 </body>
 </html>
