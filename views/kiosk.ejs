@@ -274,5 +274,140 @@ $('txt').onclick = e => { const on = e.currentTarget.getAttribute('aria-pressed'
   renderCats(); renderGrid(); renderCart();
 })();
 </script>
+
+<!--bobabot-->
+<style>
+  #botBtn{
+    position:fixed;
+    left:20px;
+    bottom:20px;
+    z-index:50;
+    border:0;
+    border-radius:40px;
+    padding:6px 20px 6px 8px;
+    background: var(--accent); 
+    color:#fff;
+    font-weight:800;
+    display:flex;
+    align-items:center;
+    gap:8px
+  }
+
+#botBox{
+  position:fixed;
+  left:20px;
+  bottom:100px;
+  z-index:50;
+  width:360px;
+  border:2px solid #1a1a1a;
+    border-radius:16px;
+    padding:12px;
+    background: #fff; 
+}
+
+#botLog{
+  height:260px;
+  overflow:auto;
+  font-size: .8em
+}
+
+#botLog p{
+  border-radius:12px;
+  background:#fff4e6;
+  padding: 8px 12px
+
+}
+
+#botLog .me{
+  background: #1a1a1a;
+  color: #fff;
+  text-align:right
+}
+
+#botForm{
+  display:flex;
+  gap:8px
+}
+
+#botForm input{
+  flex:1;
+  min-width:0;
+  font: inherit;
+  font-size: .8em;
+  padding:0 10px
+}
+</style>
+
+<button id="botBtn" aria-expanded="false" aria-controls="botBox">
+  <svg width="44" height="54" viewBox="0 0 100 120" aria-hidden="true">
+    <path d="M18 40l6 66q1 12 13 12h26q12 0 13-12l6-66z" fill="#f6dcb8" stroke="#3b2a20" stroke-width="4"/>
+    <rect x="12" y="30" width="76" height="12" rx="6" fill="#fff" stroke="#3b2a20" stroke-width="4"/>
+    <circle cx="38" cy="64" r="7"/><circle cx="62" cy="64" r="7"/>
+    <ellipse cx="28" cy="76" rx="6" ry="4" fill="#ff9eb5"/><ellipse cx="72" cy="76" rx="6" ry="4" fill="#ff9eb5"/>
+    <path d="M44 74q6 7 12 0" fill="none" stroke="#3b2a20" stroke-width="3"/>
+    <circle cx="36" cy="104" r="6"/><circle cx="50" cy="108" r="6"/><circle cx="64" cy="104" r="6"/>
+
+
+  </svg>
+  Ask Bobabot
+</button>
+<section id="botBox" hidden aria-label="Bobabot chat">
+  <div id="botLog" role="log" aria-live="polite"><p> Hi! I am Bobabot, Ask me about our drinks! </p>
+  </div>
+  <form id="botForm">
+    <label for="botIn" class="sr">Question</label>
+    <input id="botIn" required placeholder="Ask a question">
+    <button>send</button>
+  </form>
+</section>
+<script>
+  const botBox = document.getElementById('botBox');
+  const botLog = document.getElementById('botLog');
+  const botIn = document.getElementById('botIn');
+
+  //bubble 
+  function botSay(text,cls){
+    const p = document.createElement('p');
+    p.textContent = text;
+    p.className = cls || '';
+    botLog.appendChild(p);
+    botLog.scrollTop = botLog.scrollHeight;
+    return p;
+  }
+  //open/close chat
+  document.getElementById('botBtn').onclick = e =>{
+    botBox.hidden = !botBox.hidden;
+    e.currentTarget.setAttribute('aria-expanded', !botBox.hidden);
+    if (!botBox.hidden) botIn.focus();
+  };
+
+  //send Q ro server and display answer
+  document.getElementById('botForm').onsubmit= async e => {
+    e.preventDefault();
+    const msg = botIn.value;
+    botIn.value='';
+    botSay(msg,'me');
+    const wait = botSay('...');
+    try{
+      const r= await fetch('/api/chat',{
+        method:'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({message:msg})
+
+      });
+      wait.textContent = (await r.json()).reply;
+
+    }catch(err){
+      wait.textContent='Sorry cannot connect right now';
+    }
+  };
+
+
+
+</script>
+
+</body>
+</html>
+
 </body>
 </html>
