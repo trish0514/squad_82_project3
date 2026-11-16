@@ -1,10 +1,3 @@
-<%
-  const sizes = [{n:'Regular', p:0}, {n:'Large', p:0.75}];
-  const sugar = ['0%','30%','50%','70%','100%'];
-  const ice = ['No ice','Less ice','Regular ice'];
-  const tops = [{n:'Boba',p:0.75},{n:'Lychee jelly',p:0.75},{n:'Pudding',p:0.75},{n:'Aloe vera',p:0.75},{n:'Cheese foam',p:1.25}];
-  const tax = 0.0825;
-%>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -60,6 +53,14 @@ legend{font-weight:800;margin-bottom:6px;font-size:.9em}
 .totals .t{font:800 1.3em "Bricolage Grotesque",sans-serif;margin:4px 0 10px}
 .pay{background:var(--accent);color:var(--accent-ink);border:0;border-radius:10px;font-weight:800;min-height:60px;width:100%}
 .pay:disabled{opacity:.4;cursor:not-allowed}
+dialog{border:0;border-radius:16px;padding:0;width:min(560px,94vw);background:var(--card);color:var(--ink);max-height:94vh}
+dialog::backdrop{background:rgba(0,0,0,.5)}
+.done{text-align:center;padding:36px 28px;display:grid;gap:14px}
+.done .num{font:800 4em "Bricolage Grotesque",sans-serif}
+.actions{display:flex;gap:12px;justify-content:center}
+.actions button{border:1px solid var(--ink);border-radius:10px;padding:0 24px;background:transparent;font-weight:800}
+.actions .add{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.sr{position:absolute;left:-9999px}
 footer{grid-column:1/-1;display:flex;justify-content:space-between;padding:6px 20px;border-top:1px solid var(--line);background:var(--card);color:var(--muted);font-size:.8em}
 </style>
 </head>
@@ -76,12 +77,8 @@ footer{grid-column:1/-1;display:flex;justify-content:space-between;padding:6px 2
   <nav id="cats" aria-label="Menu categories"></nav>
 
   <main>
-    <div class="row" role="group" aria-label="Size">
-      <% sizes.forEach((s, i) => { %><button class="chip" data-size="<%= i %>" aria-pressed="<%= i === 0 %>"><%= s.n %></button><% }) %>
-    </div>
-    <div class="row" role="group" aria-label="Quantity">
-      <% for (let n = 1; n <= 9; n++) { %><button class="chip" data-qty="<%= n %>" aria-pressed="<%= n === 1 %>"><%= n %></button><% } %>
-    </div>
+    <div class="row" id="sizes" role="group" aria-label="Size"></div>
+    <div class="row" id="qtys" role="group" aria-label="Quantity"></div>
     <div id="menu"><p class="empty">Loading menu…</p></div>
   </main>
 
@@ -92,7 +89,7 @@ footer{grid-column:1/-1;display:flex;justify-content:space-between;padding:6px 2
     <ul id="cart" aria-live="polite"></ul>
     <div class="totals">
       <div><span>Subtotal</span><span id="sub">$0.00</span></div>
-      <div><span>Tax (<%= (tax * 100).toFixed(2) %>%)</span><span id="tax">$0.00</span></div>
+      <div><span>Tax (8.25%)</span><span id="tax">$0.00</span></div>
       <div class="t"><span>Total</span><span id="tot">$0.00</span></div>
     </div>
     <button class="pay" id="pay" disabled>Place order</button>
@@ -101,12 +98,19 @@ footer{grid-column:1/-1;display:flex;justify-content:space-between;padding:6px 2
   <footer><span id="clock"></span><span>POS #1 · Open</span></footer>
 </div>
 
+<dialog id="dlg" aria-labelledby="dlgTitle"></dialog>
+<div class="sr" role="status" id="live"></div>
+
 <script>
-  const SIZES = JSON.parse('<%- JSON.stringify(sizes) %>');
-  const SUGAR = JSON.parse('<%- JSON.stringify(sugar) %>');
-  const ICE = JSON.parse('<%- JSON.stringify(ice) %>');
-  const TOPS = JSON.parse('<%- JSON.stringify(tops) %>');
-  const TAX = JSON.parse('<%- JSON.stringify(tax) %>');
+  const MENU_URL = '/api/menu';
+  const ORDER_URL = '/api/orders';
+  const TAX = 0.0825;
+
+  const SIZES = [{n:'Regular',p:0},{n:'Large',p:0.75}];
+  const SUGAR = ['0%','30%','50%','70%','100%'];
+  const ICE   = ['No ice','Less ice','Regular ice'];
+  const TOPS  = [{n:'Boba',p:0.75},{n:'Lychee jelly',p:0.75},{n:'Pudding',p:0.75},{n:'Aloe vera',p:0.75},{n:'Cheese foam',p:1.25}];
+
   const $ = id => document.getElementById(id), money = n => '$' + n.toFixed(2);
   let size = 0, qty = 1, sel = -1, cart = [], MENU = [], CATS = [];
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -124,7 +128,7 @@ footer{grid-column:1/-1;display:flex;justify-content:space-between;padding:6px 2
   }
   async function loadMenu(){
     try {
-      const r = await fetch('/api/menu');
+      const r = await fetch(MENU_URL);
       if (!r.ok) throw new Error('HTTP ' + r.status);
       const d = await r.json();
       if (!Array.isArray(d) || !d.length) throw new Error('Empty menu');
@@ -142,7 +146,7 @@ footer{grid-column:1/-1;display:flex;justify-content:space-between;padding:6px 2
 
   function renderCart(){
     $('cart').innerHTML = cart.length ? cart.map((i, k) =>
-      `<li><button data-k="${k}" aria-current="${k === sel}"><strong>${i.qty} × ${i.name}</strong><span>${money(unit(i) * i.qty)}</span>
+      `<li><button data-k="${k}" aria-current="${k === sel}"><strong>${i.qty} × ${esc(i.name)}</strong><span>${money(unit(i) * i.qty)}</span>
       <span class="opts">${SIZES[i.size].n}, ${SUGAR[i.sugar]} sugar, ${ICE[i.ice]}${i.tops.length ? ', ' + i.tops.map(t => TOPS[t].n).join(', ') : ''}</span></button></li>`).join('')
       : '<li class="empty">Order is empty. Tap a drink to begin.</li>';
     const sub = cart.reduce((s, i) => s + unit(i) * i.qty, 0);
@@ -154,7 +158,7 @@ footer{grid-column:1/-1;display:flex;justify-content:space-between;padding:6px 2
     const i = cart[sel];
     if (!i){ $('custom').innerHTML = '<h2>Customize</h2><p class="empty">Select a drink in your order to change its sugar, ice, or toppings.</p>'; return; }
     const chips = (arr, key, cur, lab) => arr.map((t, k) => `<button class="chip" data-${key}="${k}" aria-pressed="${cur === k}">${lab(t)}</button>`).join('');
-    $('custom').innerHTML = `<h2>${i.qty} ${i.name}</h2>
+    $('custom').innerHTML = `<h2>${i.qty} ${esc(i.name)}</h2>
       <div class="step"><button data-d="-1" aria-label="Fewer">−</button><output>${i.qty}</output><button data-d="1" aria-label="More">+</button></div>
       <fieldset><legend>Size</legend><div class="row">${chips(SIZES, 'sz', i.size, t => t.n + (t.p ? ` (+${money(t.p)})` : ''))}</div></fieldset>
       <fieldset><legend>Sugar level</legend><div class="row">${chips(SUGAR, 'su', i.sugar, t => t)}</div></fieldset>
