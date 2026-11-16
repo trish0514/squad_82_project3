@@ -69,8 +69,10 @@ footer{grid-column:1/-1;display:flex;justify-content:space-between;padding:6px 2
 <div class="app">
   <header>
     <h1>BobaWorld</h1>
-    <div class="tools" role="group" aria-label="Navigation and accessibility options">
+    <div class="tools" role="group" aria-label="Navigation">
       <a class="btn" href="/">Back to hub</a>
+    </div>
+    <div class="tools" role="group" aria-label="Accessibility options">
       <button id="txt" aria-pressed="false">Larger text</button>
       <button id="hc" aria-pressed="false">High contrast</button>
     </div>
@@ -115,6 +117,8 @@ footer{grid-column:1/-1;display:flex;justify-content:space-between;padding:6px 2
   const TOPS = JSON.parse('<%- JSON.stringify(tops) %>');
   const TAX = JSON.parse('<%- JSON.stringify(tax) %>');
   const $ = id => document.getElementById(id), money = n => '$' + n.toFixed(2);
+  const DRINK_COLORS = {'Classic Milk Tea':'#c98a5b','Taro Milk Tea':'#b79ad6','Brown Sugar Milk':'#8a5a3b','Jasmine Milk Tea':'#e3d3a8','Mango Green Tea':'#f7b32b','Passion Fruit Tea':'#f2813a','Strawberry Lemon':'#e8506b','Peach Oolong':'#f4a58a','Ceremonial Matcha Latte':'#7bb661','Strawberry Matcha':'#a8c97a','Mango Slush':'#f7b32b','Lychee Slush':'#f1c9d4'};
+  const PALETTE = ['#c98a5b','#b79ad6','#f7b32b','#e8506b','#7bb661','#f2813a','#f4a58a','#8b5fd1'];
   let size = 0, qty = 1, sel = -1, cart = [], MENU = [], CATS = [];
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const cup = color => `<svg viewBox="0 0 96 120" aria-hidden="true" fill="${esc(color)}" fill-opacity=".4" stroke="#1a1a1a" stroke-width="4" stroke-linejoin="round">
@@ -135,7 +139,7 @@ footer{grid-column:1/-1;display:flex;justify-content:space-between;padding:6px 2
       if (!r.ok) throw new Error('HTTP ' + r.status);
       const d = await r.json();
       if (!Array.isArray(d) || !d.length) throw new Error('Empty menu');
-      MENU = d.map(x => ({...x, price:Number(x.price), color:x.color || '#c98a5b'}));
+      MENU = d.map((x, k) => ({...x, price:Number(x.price), color:x.color || DRINK_COLORS[x.name] || PALETTE[k % PALETTE.length]}));
       CATS = [...new Set(MENU.map(m => m.category))];
       renderMenu();
     } catch (err) {
