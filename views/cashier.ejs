@@ -1,3 +1,10 @@
+<%
+  const sizes = [{n:'Regular', p:0}, {n:'Large', p:0.75}];
+  const sugar = ['0%','30%','50%','70%','100%'];
+  const ice = ['No ice','Less ice','Regular ice'];
+  const tops = [{n:'Boba',p:0.75},{n:'Lychee jelly',p:0.75},{n:'Pudding',p:0.75},{n:'Aloe vera',p:0.75},{n:'Cheese foam',p:1.25}];
+  const tax = 0.0825;
+%>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -77,8 +84,12 @@ footer{grid-column:1/-1;display:flex;justify-content:space-between;padding:6px 2
   <nav id="cats" aria-label="Menu categories"></nav>
 
   <main>
-    <div class="row" id="sizes" role="group" aria-label="Size"></div>
-    <div class="row" id="qtys" role="group" aria-label="Quantity"></div>
+    <div class="row" role="group" aria-label="Size">
+      <% sizes.forEach((s, i) => { %><button class="chip" data-size="<%= i %>" aria-pressed="<%= i === 0 %>"><%= s.n %></button><% }) %>
+    </div>
+    <div class="row" role="group" aria-label="Quantity">
+      <% for (let n = 1; n <= 9; n++) { %><button class="chip" data-qty="<%= n %>" aria-pressed="<%= n === 1 %>"><%= n %></button><% } %>
+    </div>
     <div id="menu"><p class="empty">Loading menu…</p></div>
   </main>
 
@@ -89,7 +100,7 @@ footer{grid-column:1/-1;display:flex;justify-content:space-between;padding:6px 2
     <ul id="cart" aria-live="polite"></ul>
     <div class="totals">
       <div><span>Subtotal</span><span id="sub">$0.00</span></div>
-      <div><span>Tax (8.25%)</span><span id="tax">$0.00</span></div>
+      <div><span>Tax (<%= (tax * 100).toFixed(2) %>%)</span><span id="tax">$0.00</span></div>
       <div class="t"><span>Total</span><span id="tot">$0.00</span></div>
     </div>
     <button class="pay" id="pay" disabled>Place order</button>
@@ -104,13 +115,11 @@ footer{grid-column:1/-1;display:flex;justify-content:space-between;padding:6px 2
 <script>
   const MENU_URL = '/api/menu';
   const ORDER_URL = '/api/orders';
-  const TAX = 0.0825;
-
-  const SIZES = [{n:'Regular',p:0},{n:'Large',p:0.75}];
-  const SUGAR = ['0%','30%','50%','70%','100%'];
-  const ICE   = ['No ice','Less ice','Regular ice'];
-  const TOPS  = [{n:'Boba',p:0.75},{n:'Lychee jelly',p:0.75},{n:'Pudding',p:0.75},{n:'Aloe vera',p:0.75},{n:'Cheese foam',p:1.25}];
-
+  const SIZES = JSON.parse('<%- JSON.stringify(sizes) %>');
+  const SUGAR = JSON.parse('<%- JSON.stringify(sugar) %>');
+  const ICE = JSON.parse('<%- JSON.stringify(ice) %>');
+  const TOPS = JSON.parse('<%- JSON.stringify(tops) %>');
+  const TAX = JSON.parse('<%- JSON.stringify(tax) %>');
   const $ = id => document.getElementById(id), money = n => '$' + n.toFixed(2);
   let size = 0, qty = 1, sel = -1, cart = [], MENU = [], CATS = [];
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -146,7 +155,7 @@ footer{grid-column:1/-1;display:flex;justify-content:space-between;padding:6px 2
 
   function renderCart(){
     $('cart').innerHTML = cart.length ? cart.map((i, k) =>
-      `<li><button data-k="${k}" aria-current="${k === sel}"><strong>${i.qty} × ${esc(i.name)}</strong><span>${money(unit(i) * i.qty)}</span>
+      `<li><button data-k="${k}" aria-current="${k === sel}"><strong>${i.qty} × ${i.name}</strong><span>${money(unit(i) * i.qty)}</span>
       <span class="opts">${SIZES[i.size].n}, ${SUGAR[i.sugar]} sugar, ${ICE[i.ice]}${i.tops.length ? ', ' + i.tops.map(t => TOPS[t].n).join(', ') : ''}</span></button></li>`).join('')
       : '<li class="empty">Order is empty. Tap a drink to begin.</li>';
     const sub = cart.reduce((s, i) => s + unit(i) * i.qty, 0);
@@ -158,7 +167,7 @@ footer{grid-column:1/-1;display:flex;justify-content:space-between;padding:6px 2
     const i = cart[sel];
     if (!i){ $('custom').innerHTML = '<h2>Customize</h2><p class="empty">Select a drink in your order to change its sugar, ice, or toppings.</p>'; return; }
     const chips = (arr, key, cur, lab) => arr.map((t, k) => `<button class="chip" data-${key}="${k}" aria-pressed="${cur === k}">${lab(t)}</button>`).join('');
-    $('custom').innerHTML = `<h2>${i.qty} ${esc(i.name)}</h2>
+    $('custom').innerHTML = `<h2>${i.qty} ${i.name}</h2>
       <div class="step"><button data-d="-1" aria-label="Fewer">−</button><output>${i.qty}</output><button data-d="1" aria-label="More">+</button></div>
       <fieldset><legend>Size</legend><div class="row">${chips(SIZES, 'sz', i.size, t => t.n + (t.p ? ` (+${money(t.p)})` : ''))}</div></fieldset>
       <fieldset><legend>Sugar level</legend><div class="row">${chips(SUGAR, 'su', i.sugar, t => t)}</div></fieldset>
@@ -195,13 +204,33 @@ footer{grid-column:1/-1;display:flex;justify-content:space-between;padding:6px 2
     else if (D.rm){ cart.splice(sel, 1); sel = cart.length - 1; }
     refresh();
   };
-  $('pay').onclick = async () => {
-    const sub = cart.reduce((s, i) => s + unit(i) * i.qty, 0);
+  async function placeOrder(){
+    const sub = cart.reduce((s, i) => s + unit(i) * i.qty, 0), tax = sub * TAX, total = sub + tax;
     $('pay').disabled = true;
-    try { await fetch('/api/orders', {method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({source:'pos', items:cart.map(i => ({...i, price:unit(i)})), subtotal:sub, tax:sub * TAX, total:sub * (1 + TAX)})}); } catch (err) { console.warn(err); }
-    cart = []; sel = -1; refresh();
-  };
+    try{
+      const r = await fetch(ORDER_URL,{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({source:'pos', subtotal:sub, tax:tax, total:total,
+          items:cart.map(i => ({id:i.id, name:i.name, quantity:i.qty, size:SIZES[i.size].n, sugar:SUGAR[i.sugar], ice:ICE[i.ice],
+            toppings:i.tops.map(t => TOPS[t].n), price:unit(i)}))})});
+      if(!r.ok) throw new Error('HTTP ' + r.status);
+      const d = await r.json();
+      const num = d.orderNumber;
+      $('dlg').innerHTML = `<div class="done"><h2 id="dlgTitle">Order placed</h2>
+        <div class="num" aria-label="Order number ${num}">#${num}</div>
+        <p>Total ${money(total)}</p>
+        <div class="actions"><button class="add" id="ok">New order</button></div></div>`;
+      $('dlg').showModal(); $('ok').onclick = () => $('dlg').close();
+      cart = []; sel = -1; refresh();
+    }catch(e){
+      console.error('Order failed', e);
+      $('dlg').innerHTML = `<div class="done"><h2 id="dlgTitle">Sorry, something went wrong.</h2>
+        <p>The order was not placed. Please try again.</p>
+        <div class="actions"><button class="add" id="ok">Back to order</button></div></div>`;
+      $('dlg').showModal(); $('ok').onclick = () => $('dlg').close();
+      $('pay').disabled = !cart.length;   // cart is kept so they can retry
+    }
+  }
+  $('pay').onclick = placeOrder;
   $('hc').onclick = e => { const on = document.body.classList.toggle('hc'); e.currentTarget.setAttribute('aria-pressed', on); };
   $('txt').onclick = e => { const on = e.currentTarget.getAttribute('aria-pressed') !== 'true';
     document.documentElement.style.setProperty('--fs', on ? '19px' : '16px'); e.currentTarget.setAttribute('aria-pressed', on); };
@@ -210,3 +239,5 @@ footer{grid-column:1/-1;display:flex;justify-content:space-between;padding:6px 2
 </script>
 </body>
 </html>
+
+
