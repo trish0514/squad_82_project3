@@ -29,7 +29,6 @@ header{grid-column:1/-1;display:flex;align-items:center;gap:16px;padding:10px 20
 header h1{font-size:1.4em;font-weight:800;flex:1}
 .tools{display:flex;gap:8px}
 .tools button,.chip{background:transparent;border:1px solid var(--ink);border-radius:8px;padding:0 14px;font-weight:700;font-size:.85em}
-.tools a.btn{display:flex;align-items:center;min-height:48px;padding:0 14px;border:1px solid var(--ink);border-radius:8px;font-weight:700;font-size:.85em;color:var(--ink);text-decoration:none}
 [aria-pressed=true],nav [aria-current=true]{background:var(--ink)!important;color:#fff!important}
 nav{padding:12px 8px;display:flex;flex-direction:column;gap:6px;border-right:1px solid var(--line);background:var(--card)}
 nav button{background:transparent;border:0;border-radius:8px;font-weight:700;color:var(--muted);padding:8px 6px;min-height:64px}
@@ -69,9 +68,6 @@ footer{grid-column:1/-1;display:flex;justify-content:space-between;padding:6px 2
 <div class="app">
   <header>
     <h1>BobaWorld</h1>
-    <div class="tools" role="group" aria-label="Navigation">
-      <a class="btn" href="/">Back to hub</a>
-    </div>
     <div class="tools" role="group" aria-label="Accessibility options">
       <button id="txt" aria-pressed="false">Larger text</button>
       <button id="hc" aria-pressed="false">High contrast</button>
