@@ -159,7 +159,22 @@
         function build_card(order){
             const card = orders_template.content.firstElementChild.cloneNode(true);
             card.dataset.id = order.id;
-            card.querySelector('.order-number')
+            card.querySelector('.order-number').textContent = 'Order #' + order.id;
+            card.querySelector('.order-source').textContent = order.source == 'pos' ? 'Cashier': order.source === 'kiosk' ? 'Kiosk' : order.source;
+            card.querySelector('order.time').textContent = new Date(order.created_at).toLocaleTimeString([], {hour: 'numeric', minute: '2-digit'});
+        
+            const list = card.querySelector('.order-details');
+            for(const item of order.items){
+                const li = document.createElement('li');
+                const name = document.createElement('strong');
+                name.textContent = item.name;
+                const p = document.createElement('p');
+                p.textContent = describe(item);
+                li.append(name, p);
+                list.appendChild(li);
+            }
+
+            
         }
     </script>
 
