@@ -290,7 +290,7 @@ app.post('/api/orders', async (req, res) => {
     client.release();
   }
 });
-
+/*
 app.get('/api/kitchen/orders', async(req, res) =>{
   try{
     const {rows} = await pool.query('SELECT o.id, o.source, o.order_time AS created_at, json_agg(json_build_object('name', m.name, 'quantity', 1, 'customizations', concat_ws('.', NULLIF(i.size,''),'Sugar: '  || NULLIF(i.sugar, ''), 'Ice: '|| NULLIF(i.ice, ''), NULLIF(array_to_string(i.toppings, ', '), ''))
@@ -298,7 +298,7 @@ app.get('/api/kitchen/orders', async(req, res) =>{
     );
   }
 }
-
+*/
 //bobabot
 app.post('/api/chat', async(req, res) => {
   try{
