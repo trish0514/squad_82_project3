@@ -152,6 +152,15 @@
         const order_count = document.getElementById('order_count');
         
         let request_running = false;
+        function describe(item){
+            return [item.size, item.sugar ? 'Sugar: ' + item.sugar : '', item.ice ? 'Ice: ' + item.ice : '', item.toppings && item.toppings.length ? 'Toppings: ' + item.toppings.join(','): ''].filter(Boolean).join(' . ');
+        }
+
+        function build_card(order){
+            const card = orders_template.content.firstElementChild.cloneNode(true);
+            card.dataset.id = order.id;
+            card.querySelector('.order-number')
+        }
     </script>
 
 </html>
