@@ -329,7 +329,50 @@ app.post('/api/chat', async(req, res) => {
 
 });
 
+// Weather API
 
+app.get('/api/weather', async (req, res) => {
+  try {
+    const city = process.env.WEATHER_CITY || 'College Station';
+    const units = process.env.WEATHER_UNITS || 'imperial';
+    const apiKey = process.env.OPENWEATHER_API_KEY;
+
+    if (!apiKey) {
+      return res.status(500).json({
+        error: 'OPENWEATHER_API_KEY is missing from .env'
+      });
+    }
+
+    const apiUrl =
+      `https://api.openweathermap.org/data/2.5/weather` +
+      `?q=${encodeURIComponent(city)}` +
+      `&appid=${apiKey}` +
+      `&units=${units}`;
+
+    const weatherResponse = await fetch(apiUrl);
+
+    if (!weatherResponse.ok) {
+      console.error('OpenWeather status:', weatherResponse.status);
+      return res.status(weatherResponse.status).json({
+        error: 'Unable to retrieve weather.'
+      });
+    }
+
+    const weather = await weatherResponse.json();
+
+    res.json({
+      city: weather.name,
+      temperature: Math.round(weather.main.temp),
+      feelsLike: Math.round(weather.main.feels_like),
+      description: weather.weather?.[0]?.description || 'Unknown',
+      icon: weather.weather?.[0]?.icon || null,
+      units
+    });
+  } catch (err) {
+    console.error('Weather API error:', err);
+    res.status(500).json({ error: 'Unable to retrieve weather.' });
+  }
+});
 
 
 // Start server
