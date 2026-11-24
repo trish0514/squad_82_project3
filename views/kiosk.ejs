@@ -35,7 +35,14 @@ main h2{font-size:1.8em;margin-bottom:4px}
 main p.sub{margin:0 0 18px;color:var(--muted)}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
 .drink{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 12px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px;min-height:240px}
-.drink svg{width:72px;height:96px}
+.drink img{
+  width: 150px;
+  height: 105px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: #f4eee9;
+}
 .drink h3{font-size:1.05em}
 .drink .price{font-weight:700}
 .drink small{color:var(--muted);font-size:.75em}
@@ -164,10 +171,32 @@ const $ = id => document.getElementById(id);
 const money = n => '$' + n.toFixed(2);
 let cat = 'milk', cart = [], lastFocus = null;
 
-function cup(color){
-  return `<svg viewBox="0 0 96 120" aria-hidden="true" fill="${color}" fill-opacity=".4" stroke="#1a1a1a" stroke-width="4" stroke-linejoin="round">
-    <path d="M50 4l4 26" fill="none"/><rect x="10" y="30" width="76" height="10" rx="4"/>
-    <path d="M16 40l6 68a8 8 0 0 0 8 7h36a8 8 0 0 0 8-7l6-68z"/></svg>`;
+const DRINK_IMAGES = {
+  'Classic Milk Tea': '/images/classic-milk-tea.jpg',
+  'Taro Milk Tea': '/images/taro-milk-tea.jpg',
+  'Brown Sugar Milk': '/images/brown-sugar-milk.jpg',
+  'Jasmine Milk Tea': '/images/jasmine-milk-tea.jpg',
+  'Mango Green Tea': '/images/mango-green-tea.jpg',
+  'Passion Fruit Tea': '/images/passion-fruit-tea.jpg',
+  'Strawberry Lemon': '/images/strawberry-lemon.jpg',
+  'Peach Oolong': '/images/peach-oolong.jpg',
+  'Ceremonial Matcha Latte': '/images/matcha-latte.jpg',
+  'Strawberry Matcha': '/images/strawberry-matcha.jpg',
+  'Mango Slush': '/images/mango-slush.jpg',
+  'Lychee Slush': '/images/lychee-slush.jpg'
+  'Strawberry Slush': '/images/strawberry-slush.jpg'
+  'Watermelon Slush': '/images/watermelon-slush.jpg'
+};
+
+function drinkImage(drink) {
+  const imagePath = DRINK_IMAGES[drink.name] || '/images/default-boba.jpg';
+
+  return `
+    <img
+      src="${imagePath}"
+      alt="${drink.name}"
+      onerror="this.onerror=null; this.src='/images/default-boba.jpg';">
+  `;
 }
 
 function renderCats(){
@@ -179,7 +208,7 @@ function renderGrid(){
   $('catTitle').textContent = c.name; $('catSub').textContent = c.sub;
   $('grid').innerHTML = MENU.filter(m => m.category===cat).map(m =>
     `<button class="drink" data-id="${m.id}" aria-label="${m.name}, ${money(m.price)}. Customize and add.">
-      ${cup(m.color)}<h3>${m.name}</h3><small>${m.desc||''}</small><span class="price">${money(m.price)}</span></button>`).join('');
+      ${drinkImage(m)}<h3>${m.name}</h3><small>${m.desc||''}</small><span class="price">${money(m.price)}</span></button>`).join('');
 }
 function totals(){
   const sub = cart.reduce((s,i)=>s+i.price,0), tax = sub*TAX;
