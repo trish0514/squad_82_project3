@@ -208,7 +208,8 @@ function renderGrid(){
   $('catTitle').textContent = c.name; $('catSub').textContent = c.sub;
   $('grid').innerHTML = MENU.filter(m => m.category===cat).map(m =>
     `<button class="drink" data-id="${m.id}" aria-label="${m.name}, ${money(m.price)}. Customize and add.">
-      ${drinkImage(m)}<h3>${m.name}</h3><small>${m.desc||''}</small><span class="price">${money(m.price)}</span></button>`).join('');
+      <div style="width:150px;height:105px;border-radius:10px;background:#ead2bd;"></div>
+<h3>${m.name}</h3><small>${m.desc||''}</small><span class="price">${money(m.price)}</span></button>`).join('');
 }
 function totals(){
   const sub = cart.reduce((s,i)=>s+i.price,0), tax = sub*TAX;
