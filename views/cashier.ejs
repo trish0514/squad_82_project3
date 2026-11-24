@@ -122,31 +122,31 @@ footer{grid-column:1/-1;display:flex;justify-content:space-between;padding:6px 2
   const DRINK_COLORS = {'Classic Milk Tea':'#c98a5b','Taro Milk Tea':'#b79ad6','Brown Sugar Milk':'#8a5a3b','Jasmine Milk Tea':'#e3d3a8','Mango Green Tea':'#f7b32b','Passion Fruit Tea':'#f2813a','Strawberry Lemon':'#e8506b','Peach Oolong':'#f4a58a','Ceremonial Matcha Latte':'#7bb661','Strawberry Matcha':'#a8c97a','Mango Slush':'#f7b32b','Lychee Slush':'#f1c9d4'};
   const PALETTE = ['#c98a5b','#b79ad6','#f7b32b','#e8506b','#7bb661','#f2813a','#f4a58a','#8b5fd1'];
   const DRINK_IMAGES = {
-  'Classic Milk Tea': '/images/classic-milk-tea.jpg',
-  'Taro Milk Tea': '/images/taro-milk-tea.jpg',
-  'Brown Sugar Milk Tea': '/images/brown-sugar-milk.jpg',
-  'Jasmine Milk Tea': '/images/jasmine-milk-tea.jpg',
-  'Mango Green Tea': '/images/mango-green-tea.jpg',
-  'Passion Fruit Tea': '/images/passion-fruit-tea.jpg',
-  'Strawberry Lemon': '/images/strawberry-lemon.jpg',
-  'Peach Oolong': '/images/peach-oolong.jpg',
-  'Matcha Latte': '/images/matcha-latte.jpg',
-  'Strawberry Matcha': '/images/strawberry-matcha.jpg',
-  'Mango Slush': '/images/mango-slush.jpg',
-  'Lychee Slush': '/images/lychee-slush.jpg'
-  'Strawberry Slush': '/images/strawberry-slush.jpg'
-  'Watermelon Slush': '/images/watermelon-slush.jpg'
+  'Classic Milk Tea': '/images/classic-milk-tea.webp',
+  'Taro Milk Tea': '/images/taro-milk-tea.webp',
+  'Brown Sugar Milk Tea': '/images/brown-sugar-milk.webp',
+  'Jasmine Milk Tea': '/images/jasmine-milk-tea.webp',
+  'Mango Green Tea': '/images/mango-green-tea.webp',
+  'Passion Fruit Tea': '/images/passion-fruit-tea.webp',
+  'Strawberry Lemon': '/images/strawberry-lemon.webp',
+  'Peach Oolong': '/images/peach-oolong.webp',
+  'Matcha Latte': '/images/matcha-latte.webp',
+  'Strawberry Matcha': '/images/strawberry-matcha.webp',
+  'Mango Slush': '/images/mango-slush.webp',
+  'Lychee Slush': '/images/lychee-slush.webp'
+  'Strawberry Slush': '/images/strawberry-slush.webp'
+  'Watermelon Slush': '/images/watermelon-slush.webp'
   };
   let size = 0, qty = 1, sel = -1, cart = [], MENU = [], CATS = [];
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const drinkImage = drink => {
-  const imagePath = DRINK_IMAGES[drink.name] || '/images/default-boba.jpg';
+  const imagePath = DRINK_IMAGES[drink.name] || '/images/default-boba.webp';
 
   return `
     <img
       src="${esc(imagePath)}"
       alt="${esc(drink.name)}"
-      onerror="this.src='/images/default-boba.jpg'">
+      onerror="this.src='/images/default-boba.webp'">
   `;
 };
 
