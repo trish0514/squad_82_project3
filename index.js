@@ -7,6 +7,7 @@ require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 3000;
 // Middleware must come before routes that use req.body
+app.use(express.static('public'));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
