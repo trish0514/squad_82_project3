@@ -172,30 +172,30 @@ const money = n => '$' + n.toFixed(2);
 let cat = 'milk', cart = [], lastFocus = null;
 
 const DRINK_IMAGES = {
-  'Classic Milk Tea': '/images/classic-milk-tea.jpg',
-  'Taro Milk Tea': '/images/taro-milk-tea.jpg',
-  'Brown Sugar Milk': '/images/brown-sugar-milk.jpg',
-  'Jasmine Milk Tea': '/images/jasmine-milk-tea.jpg',
-  'Mango Green Tea': '/images/mango-green-tea.jpg',
-  'Passion Fruit Tea': '/images/passion-fruit-tea.jpg',
-  'Strawberry Lemon': '/images/strawberry-lemon.jpg',
-  'Peach Oolong': '/images/peach-oolong.jpg',
-  'Ceremonial Matcha Latte': '/images/matcha-latte.jpg',
-  'Strawberry Matcha': '/images/strawberry-matcha.jpg',
-  'Mango Slush': '/images/mango-slush.jpg',
-  'Lychee Slush': '/images/lychee-slush.jpg'
-  'Strawberry Slush': '/images/strawberry-slush.jpg'
-  'Watermelon Slush': '/images/watermelon-slush.jpg'
+  'Classic Milk Tea': '/images/classic-milk-tea.webp',
+  'Taro Milk Tea': '/images/taro-milk-tea.webp',
+  'Brown Sugar Milk': '/images/brown-sugar-milk.webp',
+  'Jasmine Milk Tea': '/images/jasmine-milk-tea.webp',
+  'Mango Green Tea': '/images/mango-green-tea.webp',
+  'Passion Fruit Tea': '/images/passion-fruit-tea.webp',
+  'Strawberry Lemon': '/images/strawberry-lemon.webp',
+  'Peach Oolong': '/images/peach-oolong.webp',
+  'Ceremonial Matcha Latte': '/images/matcha-latte.webp',
+  'Strawberry Matcha': '/images/strawberry-matcha.webp',
+  'Mango Slush': '/images/mango-slush.webp',
+  'Lychee Slush': '/images/lychee-slush.webp'
+  'Strawberry Slush': '/images/strawberry-slush.webp'
+  'Watermelon Slush': '/images/watermelon-slush.webp'
 };
 
 function drinkImage(drink) {
-  const imagePath = DRINK_IMAGES[drink.name] || '/images/default-boba.jpg';
+  const imagePath = DRINK_IMAGES[drink.name] || '/images/default-boba.webp';
 
   return `
     <img
       src="${imagePath}"
       alt="${drink.name}"
-      onerror="this.onerror=null; this.src='/images/default-boba.jpg';">
+      onerror="this.onerror=null; this.src='/images/default-boba.webp';">
   `;
 }
 
