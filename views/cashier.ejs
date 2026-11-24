@@ -40,7 +40,13 @@ main h2{font-size:1.4em;margin:10px 0 2px}
 main p.sub{margin:0 0 10px;color:var(--muted);font-size:.85em}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
 .drink{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 6px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:2px;min-height:150px}
-.drink svg{width:40px;height:52px}
+.drink img{
+  width: 92px;
+  height: 78px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+}
 .drink h3{font-size:.95em}
 .drink small{color:var(--muted);font-size:.7em}
 .drink .price{font-weight:700;font-size:.9em}
@@ -115,18 +121,39 @@ footer{grid-column:1/-1;display:flex;justify-content:space-between;padding:6px 2
   const $ = id => document.getElementById(id), money = n => '$' + n.toFixed(2);
   const DRINK_COLORS = {'Classic Milk Tea':'#c98a5b','Taro Milk Tea':'#b79ad6','Brown Sugar Milk':'#8a5a3b','Jasmine Milk Tea':'#e3d3a8','Mango Green Tea':'#f7b32b','Passion Fruit Tea':'#f2813a','Strawberry Lemon':'#e8506b','Peach Oolong':'#f4a58a','Ceremonial Matcha Latte':'#7bb661','Strawberry Matcha':'#a8c97a','Mango Slush':'#f7b32b','Lychee Slush':'#f1c9d4'};
   const PALETTE = ['#c98a5b','#b79ad6','#f7b32b','#e8506b','#7bb661','#f2813a','#f4a58a','#8b5fd1'];
+  const DRINK_IMAGES = {
+  'Classic Milk Tea': '/images/classic-milk-tea.jpg',
+  'Taro Milk Tea': '/images/taro-milk-tea.jpg',
+  'Brown Sugar Milk': '/images/brown-sugar-milk.jpg',
+  'Jasmine Milk Tea': '/images/jasmine-milk-tea.jpg',
+  'Mango Green Tea': '/images/mango-green-tea.jpg',
+  'Passion Fruit Tea': '/images/passion-fruit-tea.jpg',
+  'Strawberry Lemon': '/images/strawberry-lemon.jpg',
+  'Peach Oolong': '/images/peach-oolong.jpg',
+  'Matcha Latte': '/images/matcha-latte.jpg',
+  'Strawberry Matcha': '/images/strawberry-matcha.jpg',
+  'Mango Slush': '/images/mango-slush.jpg',
+  'Lychee Slush': '/images/lychee-slush.jpg'
+  };
   let size = 0, qty = 1, sel = -1, cart = [], MENU = [], CATS = [];
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const cup = color => `<svg viewBox="0 0 96 120" aria-hidden="true" fill="${esc(color)}" fill-opacity=".4" stroke="#1a1a1a" stroke-width="4" stroke-linejoin="round">
-    <path d="M50 4l4 26" fill="none"/><rect x="10" y="30" width="76" height="10" rx="4"/>
-    <path d="M16 40l6 68a8 8 0 0 0 8 7h36a8 8 0 0 0 8-7l6-68z"/></svg>`;
+  const drinkImage = drink => {
+  const imagePath = DRINK_IMAGES[drink.name] || '/images/default-boba.jpg';
+
+  return `
+    <img
+      src="${esc(imagePath)}"
+      alt="${esc(drink.name)}"
+      onerror="this.src='/images/default-boba.jpg'">
+  `;
+};
 
   function renderMenu(){
     $('cats').innerHTML = CATS.map((c, i) => `<button data-c="${i}" aria-current="${i === 0}">${esc(c)}</button>`).join('');
     $('menu').innerHTML = CATS.map((c, i) => `<section id="sec-${i}"><h2>${esc(c)}</h2><div class="grid">` +
       MENU.filter(m => m.category === c).map(m =>
         `<button class="drink" data-id="${esc(m.id)}" aria-label="${esc(m.name)}, ${money(m.price)}. Add to order.">
-          ${cup(m.color)}<h3>${esc(m.name)}</h3><small>${esc(m.desc)}</small><span class="price">${money(m.price)}</span></button>`).join('') +
+          ${drinkImage(m)}<h3>${esc(m.name)}</h3><small>${esc(m.desc)}</small><span class="price">${money(m.price)}</span></button>`).join('') +
       `</div></section>`).join('');
   }
   async function loadMenu(){
